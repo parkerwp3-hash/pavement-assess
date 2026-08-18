@@ -68,4 +68,8 @@ src/
   screens/      Properties, PropertyDetail, NewPropertyFlow, Assess, Reports
   lib/          localStorage persistence, number/area formatting
   styles.css    design tokens and all component styles
+public/
+  fonts/        self-hosted Inter
+  icon.svg      app mark — stall striping on black
+  apple-touch-icon.png   180px render of the same mark; iOS ignores SVG here
 ```
