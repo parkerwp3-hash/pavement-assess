@@ -63,6 +63,16 @@ export default function Portfolio({ sites, assumptions: A, onOpenSite }) {
 
   return (
     <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
+        <span className="page-mark" aria-hidden="true">◈</span>
+        <div>
+          <div style={{ fontSize: 13, color: 'var(--ink-3)' }}>My Portfolio</div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+            Portfolio Overview <span style={{ color: 'var(--ink-3)', fontWeight: 500 }}>({sites.length})</span>
+          </h1>
+        </div>
+      </div>
+
       <div className="grid grid--kpi">
         <KPI label="Sites Assessed" prov="observed" value={sites.length}
           sub={`of ${PORTFOLIO_META.totalSitesInPortfolio} portfolio sites`} />
@@ -245,10 +255,7 @@ export default function Portfolio({ sites, assumptions: A, onOpenSite }) {
       <div className="grid grid--cards">
         {metrics.map(({ site, m }) => (
           <button key={site.id} className="sitecard" onClick={() => onOpenSite(site.id)}>
-            <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
-              <span className="sitecard-name">{site.name}</span>
-              <span className="mock-badge">MOCK</span>
-            </span>
+            <span className="sitecard-name">{site.name}</span>
             <span className="sitecard-meta">
               {site.id} · {site.region} · {site.facilityType} · {site.climateZone}
             </span>

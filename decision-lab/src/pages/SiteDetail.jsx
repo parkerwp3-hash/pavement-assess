@@ -34,7 +34,7 @@ function ZonePanel({ site, zone, assumptions: A, onClose, onEdit, onDelete }) {
       </div>
 
       <div>
-        <div className="card-title">Observed <Prov k="observed" /></div>
+        <div className="card-title">Observed</div>
         <dl className="kv">
           <dt>Distress type</dt><dd>{labelize(zone.distressType)}</dd>
           <dt>Severity</dt><dd><Sev s={zone.severity} /></dd>
@@ -55,7 +55,7 @@ function ZonePanel({ site, zone, assumptions: A, onClose, onEdit, onDelete }) {
       </div>
 
       <div>
-        <div className="card-title">Derived <Prov k="derived" /></div>
+        <div className="card-title">Derived</div>
         <dl className="kv">
           <dt>Unit cost</dt><dd>${unitCost.toFixed(2)} / {zone.unit}</dd>
           <dt>Share of site need</dt>

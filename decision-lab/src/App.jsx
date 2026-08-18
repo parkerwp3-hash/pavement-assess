@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import Sidebar from './app/Sidebar.jsx'
 import Portfolio from './pages/Portfolio.jsx'
 import SiteDetail from './pages/SiteDetail.jsx'
 import ModelLab from './pages/ModelLab.jsx'
@@ -112,47 +113,49 @@ export default function App() {
   ]
 
   return (
-    <>
-      <header className="appbar">
-        <span className="appbar-brand">
-          Diamond Portfolio Decision Lab <small>PRODUCT DISCOVERY</small>
-        </span>
-        <span className="mock-badge">MOCK DATA</span>
-        <nav className="appnav" aria-label="Main">
-          {navItems.map(([id, label]) => (
-            <button key={id} aria-current={page === id ? 'page' : undefined}
-              disabled={id === 'site' && !site}
-              style={id === 'site' && !site ? { opacity: 0.4, cursor: 'default' } : undefined}
-              onClick={() => setPage(id)}>
-              {label}
-            </button>
-          ))}
-        </nav>
-        <span className="appbar-actions">
-          <button className="btn btn--sm" onClick={() => setModal('import')}>Import JSON</button>
-          <button className="btn btn--sm" onClick={() => setModal('export')}>Export JSON</button>
-          <button className="btn btn--sm btn--danger" onClick={handleReset}>Reset Demo Data</button>
-        </span>
-      </header>
+    <div className="app">
+      <Sidebar
+        items={[
+          { id: 'portfolio', label: 'Portfolio', icon: 'portfolio' },
+          { id: 'site', label: site ? 'Site Detail' : 'Site Detail', icon: 'site', disabled: !site },
+          { id: 'lab', label: 'Model Lab', icon: 'lab' },
+        ]}
+        active={page}
+        onNavigate={setPage}
+      />
 
-      <main className="content">
-        {page === 'portfolio' ? (
-          <Portfolio sites={state.sites} assumptions={state.assumptions} onOpenSite={openSite} />
-        ) : null}
-        {page === 'site' && site ? (
-          <SiteDetail key={site.id} site={site} assumptions={state.assumptions}
-            onBack={() => setPage('portfolio')} onUpdateSite={updateSite} />
-        ) : null}
-        {page === 'lab' ? (
-          <ModelLab assumptions={state.assumptions}
-            onChange={(a) => setState((prev) => ({ ...prev, assumptions: a }))} />
-        ) : null}
-      </main>
+      <div className="main">
+        <header className="topbar">
+          <span className="topbar-title">Diamond Portfolio Decision Lab</span>
+          <span className="mock-badge">MOCK DATA</span>
+          <span className="topbar-actions">
+            <button className="btn btn--sm" onClick={() => setModal('import')}>Import JSON</button>
+            <button className="btn btn--sm" onClick={() => setModal('export')}>Export JSON</button>
+            <button className="btn btn--sm btn--danger" onClick={handleReset}>Reset Demo Data</button>
+          </span>
+        </header>
+
+        <main className="content">
+          {page === 'portfolio' ? (
+            <Portfolio sites={state.sites} assumptions={state.assumptions} onOpenSite={openSite} />
+          ) : null}
+          {page === 'site' && site ? (
+            <SiteDetail key={site.id} site={site} assumptions={state.assumptions}
+              onBack={() => setPage('portfolio')} onUpdateSite={updateSite} />
+          ) : null}
+          {page === 'lab' ? (
+            <ModelLab assumptions={state.assumptions}
+              onChange={(a) => setState((prev) => ({ ...prev, assumptions: a }))} />
+          ) : null}
+        </main>
+
+        <footer className="footer">Copyrights © 2026 Diamond Solutions · Product-discovery prototype, mock data only</footer>
+      </div>
 
       {modal ? (
         <DataModal mode={modal} state={state} onClose={() => setModal(null)}
           onApply={(next) => { setState(next); setModal(null); setSiteId(null); setPage('portfolio') }} />
       ) : null}
-    </>
+    </div>
   )
 }
