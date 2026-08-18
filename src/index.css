@@ -1,0 +1,504 @@
+/* Inter, self-hosted and latin-only: the app has to render on a lot with no
+   signal, and the other subsets are dead weight in the bundle. */
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-700.css';
+
+/* ==========================================================================
+   Tokens
+   High contrast for daylight use. Black on white only — no color, no shadow
+   depth games that wash out in the sun.
+   ========================================================================== */
+
+:root {
+  --ink: #0a0a0a;
+  --ink-muted: #5c5c5c;
+  --paper: #ffffff;
+  --surface: #f4f4f4;
+  --line: #d8d8d8;
+  --line-strong: #0a0a0a;
+
+  /* Spacing — generous, thumb-friendly */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  /* Minimum touch target. Gloved hands, uneven ground. */
+  --tap: 56px;
+
+  --tabbar-h: 68px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    system-ui, sans-serif;
+
+  --radius: 4px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Visible focus, never removed — used with a stylus or keyboard on a tablet. */
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   App shell
+   ========================================================================== */
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  flex: 1;
+  padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + var(--s-6));
+}
+
+.screen--plain {
+  padding-bottom: calc(var(--safe-b) + var(--s-6));
+}
+
+.container {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding-left: var(--s-5);
+  padding-right: var(--s-5);
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+.header {
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--s-6));
+  padding-bottom: var(--s-5);
+  border-bottom: 1px solid var(--line);
+}
+
+.header__eyebrow {
+  margin: 0 0 var(--s-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.header__title {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.header__meta {
+  margin: var(--s-2) 0 0;
+  font-size: 15px;
+  color: var(--ink-muted);
+}
+
+.header__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--tap);
+}
+
+.header__action {
+  margin-left: auto;
+  flex: none;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: var(--s-3) var(--s-5);
+  border-radius: var(--radius);
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn:active {
+  background: var(--surface);
+}
+
+.btn--primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn--primary:active {
+  background: #333333;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--ghost {
+  border-color: transparent;
+  padding-left: var(--s-2);
+  padding-right: var(--s-2);
+}
+
+.btn--ghost:active {
+  background: var(--surface);
+}
+
+.btn--stacked {
+  margin-top: var(--s-3);
+}
+
+/* Destructive-but-minor actions stay quiet: full tap target, no visual weight
+   competing with the primary action on the screen. */
+.btn--quiet {
+  border-color: transparent;
+  padding-left: var(--s-2);
+  padding-right: var(--s-2);
+  color: var(--ink-muted);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.btn--quiet:active {
+  background: var(--surface);
+}
+
+.btn[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Sticky action rail at the bottom of a form screen. */
+.actionbar {
+  position: sticky;
+  bottom: 0;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  padding-top: var(--s-4);
+  padding-bottom: calc(var(--safe-b) + var(--s-4));
+  margin-top: var(--s-6);
+}
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+.field {
+  display: block;
+  margin-bottom: var(--s-5);
+}
+
+.field__label {
+  display: block;
+  margin-bottom: var(--s-2);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.field__input {
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--s-3) var(--s-4);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  font-size: 17px; /* 17px+ keeps iOS from zooming on focus */
+  appearance: none;
+}
+
+.field__input:focus {
+  border-color: var(--ink);
+  outline: none;
+}
+
+.field__input::placeholder {
+  color: #a3a3a3;
+}
+
+.field__hint {
+  display: block;
+  margin-top: var(--s-2);
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+
+.field--last {
+  margin-bottom: 0;
+}
+
+.form-top {
+  padding-top: var(--s-6);
+}
+
+/* ==========================================================================
+   Sections (lot sections inside the new-property form)
+   ========================================================================== */
+
+.section-card {
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--s-4);
+  margin-bottom: var(--s-4);
+}
+
+.section-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+
+.section-card__index {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.subhead {
+  margin: var(--s-7) 0 var(--s-4);
+  padding-bottom: var(--s-3);
+  border-bottom: 2px solid var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Property list
+   ========================================================================== */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list__item + .list__item {
+  border-top: 1px solid var(--line);
+}
+
+.list-footer {
+  margin-top: var(--s-6);
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--line);
+}
+
+.property {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: var(--s-5) 0;
+  min-height: var(--tap);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.property:active {
+  background: var(--surface);
+}
+
+/* Same row rhythm, but read-only — no tap affordance. */
+.property--static {
+  cursor: default;
+}
+
+.total-row {
+  margin: 0;
+  padding: var(--s-5) 0;
+  border-top: 2px solid var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.property__name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.property__address {
+  margin: var(--s-1) 0 0;
+  font-size: 15px;
+  color: var(--ink-muted);
+}
+
+.property__stats {
+  margin: var(--s-3) 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* ==========================================================================
+   Empty / placeholder states
+   ========================================================================== */
+
+.empty {
+  padding: var(--s-8) 0;
+  border-top: 1px solid var(--line);
+  margin-top: -1px;
+}
+
+.empty__title {
+  margin: 0 0 var(--s-3);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.empty__body {
+  margin: 0 0 var(--s-6);
+  font-size: 16px;
+  color: var(--ink-muted);
+  max-width: 34ch;
+}
+
+.placeholder {
+  padding: var(--s-8) 0;
+}
+
+.placeholder__rule {
+  height: 2px;
+  background: var(--ink);
+  margin-bottom: var(--s-5);
+}
+
+.placeholder__title {
+  margin: 0 0 var(--s-3);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.placeholder__body {
+  margin: 0;
+  font-size: 16px;
+  color: var(--ink-muted);
+  max-width: 40ch;
+}
+
+.placeholder__list {
+  margin: var(--s-5) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+  color: var(--ink-muted);
+}
+
+.placeholder__list li {
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--line);
+}
+
+/* ==========================================================================
+   Bottom tab bar
+   ========================================================================== */
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: var(--paper);
+  border-top: 2px solid var(--ink);
+  padding-bottom: var(--safe-b);
+  z-index: 10;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-1);
+  min-height: var(--tabbar-h);
+  border: 0;
+  background: none;
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.tab[aria-current='page'] {
+  color: var(--ink);
+}
+
+.tab__icon {
+  display: block;
+}
