@@ -87,11 +87,44 @@ function Aerial({ site }) {
   )
 }
 
-export default function MapView({ site, layers, selectedId, onSelect }) {
+/**
+ * Drawing mode: clicks land as normalized 0–1 points. Closing happens by
+ * clicking back on the first vertex (or Enter, handled by the page). While
+ * drawing, existing zones go inert so a click can't both select and place.
+ */
+export default function MapView({
+  site,
+  layers,
+  selectedId,
+  onSelect,
+  drawing = false,
+  draft = [],
+  onDraftPoint,
+  onDraftClose,
+}) {
   const zones = site.repairZones.filter((z) => layers.has(z.service))
 
+  function handleCanvasClick(e) {
+    if (!drawing) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const nx = (e.clientX - rect.left) / rect.width
+    const ny = (e.clientY - rect.top) / rect.height
+    if (draft.length >= 3) {
+      const dx = (nx - draft[0][0]) * rect.width
+      const dy = (ny - draft[0][1]) * rect.height
+      if (Math.hypot(dx, dy) < 14) {
+        onDraftClose()
+        return
+      }
+    }
+    onDraftPoint([Math.min(1, Math.max(0, nx)), Math.min(1, Math.max(0, ny))])
+  }
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Mock aerial of ${site.name} with ${zones.length} repair zones shown`}>
+    <svg viewBox={`0 0 ${W} ${H}`} role="img"
+      aria-label={`Mock aerial of ${site.name} with ${zones.length} repair zones shown`}
+      onClick={handleCanvasClick}
+      style={drawing ? { cursor: 'crosshair' } : undefined}>
       {site.mapImage ? (
         <image href={site.mapImage} x="0" y="0" width={W} height={H} preserveAspectRatio="xMidYMid slice" />
       ) : (
@@ -111,6 +144,7 @@ export default function MapView({ site, layers, selectedId, onSelect }) {
           <g
             key={z.id}
             className="map-zone"
+            style={drawing ? { pointerEvents: 'none', opacity: 0.45 } : undefined}
             role="button"
             tabIndex={0}
             aria-label={`${z.id}: ${labelize(z.distressType)}, ${z.severity} severity, ${fmtInt(z.quantity)} ${z.unit}, ${fmtMoney(z.currentCustomerPrice)}`}
@@ -134,6 +168,21 @@ export default function MapView({ site, layers, selectedId, onSelect }) {
           </g>
         )
       })}
+
+      {drawing && draft.length > 0 ? (
+        <g aria-hidden="true" style={{ pointerEvents: 'none' }}>
+          <polyline
+            points={draft.map(([x, y]) => `${x * W},${y * H}`).join(' ')}
+            fill={draft.length >= 3 ? 'rgba(39, 97, 195, 0.18)' : 'none'}
+            stroke="#2761c3" strokeWidth="3" strokeDasharray="8 6"
+          />
+          {draft.map(([x, y], i) => (
+            <circle key={i} cx={x * W} cy={y * H} r={i === 0 ? 9 : 5.5}
+              fill={i === 0 ? '#ffffff' : '#2761c3'}
+              stroke="#2761c3" strokeWidth={i === 0 ? 4 : 2} />
+          ))}
+        </g>
+      ) : null}
     </svg>
   )
 }

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   BANDS,
   labelize,
@@ -8,12 +8,14 @@ import {
   siteMetrics,
 } from '../lib/calc.js'
 import MapView from '../components/MapView.jsx'
+import ZoneForm from '../components/ZoneForm.jsx'
+import { nextZoneId } from '../lib/options.js'
 import { HBar, SERVICE_COLOR } from '../components/charts.jsx'
 import { BandChip, KPI, Prov, Sev, fmtDate, fmtInt, fmtMoney, fmtMoneyFull, fmtPct } from '../components/ui.jsx'
 
 const ALL_SERVICES = ['asphalt', 'concrete', 'sealcoat', 'striping', 'drainage']
 
-function ZonePanel({ site, zone, assumptions: A, onClose }) {
+function ZonePanel({ site, zone, assumptions: A, onClose, onEdit, onDelete }) {
   const [years, setYears] = useState(3)
   const pkg = site.projectPackages.find((p) => p.repairZoneIds.includes(zone.id))
   const proj = projectZone(zone, years, A)
@@ -24,7 +26,11 @@ function ZonePanel({ site, zone, assumptions: A, onClose }) {
     <div className="card zonepanel stack" aria-label={`Repair zone ${zone.id} details`}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ fontSize: 16 }}>{zone.id} · {labelize(zone.distressType)}</h3>
-        <button className="btn btn--sm" onClick={onClose}>Close</button>
+        <span className="field-row">
+          <button className="btn btn--sm" onClick={onEdit}>Edit</button>
+          <button className="btn btn--sm btn--danger" onClick={onDelete}>Delete</button>
+          <button className="btn btn--sm" onClick={onClose}>Close</button>
+        </span>
       </div>
 
       <div>
@@ -40,6 +46,9 @@ function ZonePanel({ site, zone, assumptions: A, onClose }) {
           <dt>Confidence</dt><dd>{labelize(zone.confidence)}</dd>
         </dl>
         <p className="chart-note">Price imported from Diamond's costing system — treated as authoritative.</p>
+        {zone.notes ? (
+          <p className="chart-note" style={{ whiteSpace: 'normal' }}><b>Notes:</b> {zone.notes}</p>
+        ) : null}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
           {zone.riskTags.map((t) => <span className="tagchip" key={t}>{labelize(t)}</span>)}
         </div>
@@ -164,6 +173,10 @@ function OverrideControl({ site, metrics, onOverride }) {
 export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite }) {
   const [selectedZone, setSelectedZone] = useState(null)
   const [layers, setLayers] = useState(() => new Set(ALL_SERVICES))
+  const [drawing, setDrawing] = useState(false)
+  const [draft, setDraft] = useState([])
+  // {mode:'create', geometry} | {mode:'edit', zone}
+  const [zoneForm, setZoneForm] = useState(null)
   const fileRef = useRef(null)
 
   const m = useMemo(() => siteMetrics(site, A), [site, A])
@@ -184,6 +197,84 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
       else next.add(svc)
       return next
     })
+  }
+
+  function startDrawing() {
+    setDrawing(true)
+    setDraft([])
+    setSelectedZone(null)
+  }
+
+  function cancelDrawing() {
+    setDrawing(false)
+    setDraft([])
+  }
+
+  function closeDraft() {
+    if (draft.length < 3) return
+    setDrawing(false)
+    setZoneForm({ mode: 'create', geometry: draft })
+    setDraft([])
+  }
+
+  // Enter closes the polygon, Escape cancels, while drawing.
+  useEffect(() => {
+    if (!drawing) return undefined
+    function onKey(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        closeDraft()
+      } else if (e.key === 'Escape') {
+        cancelDrawing()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
+  /** Membership lives on packages; a zone joins at most one. */
+  function withPackageAssignment(packages, zoneId, packageId) {
+    return packages.map((p) => {
+      const without = p.repairZoneIds.filter((id) => id !== zoneId)
+      return p.id === packageId
+        ? { ...p, repairZoneIds: [...without, zoneId] }
+        : { ...p, repairZoneIds: without }
+    })
+  }
+
+  function saveZoneForm(fields) {
+    const { packageId, ...zoneFields } = fields
+    if (zoneForm.mode === 'create') {
+      const id = nextZoneId(site)
+      const newZone = { id, ...zoneFields, growthProfile: null, geometry: zoneForm.geometry }
+      onUpdateSite({
+        ...site,
+        repairZones: [...site.repairZones, newZone],
+        projectPackages: withPackageAssignment(site.projectPackages, id, packageId),
+      })
+      setSelectedZone(id)
+    } else {
+      const id = zoneForm.zone.id
+      onUpdateSite({
+        ...site,
+        repairZones: site.repairZones.map((z) => (z.id === id ? { ...z, ...zoneFields } : z)),
+        projectPackages: withPackageAssignment(site.projectPackages, id, packageId),
+      })
+    }
+    setZoneForm(null)
+  }
+
+  function deleteZone(zone) {
+    if (!window.confirm(`Delete ${zone.id} (${labelize(zone.distressType)})? This cannot be undone.`)) return
+    onUpdateSite({
+      ...site,
+      repairZones: site.repairZones.filter((z) => z.id !== zone.id),
+      projectPackages: site.projectPackages.map((p) => ({
+        ...p,
+        repairZoneIds: p.repairZoneIds.filter((id) => id !== zone.id),
+      })),
+    })
+    setSelectedZone(null)
   }
 
   function handleUpload(e) {
@@ -247,7 +338,26 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
       <div className="detail-cols" style={{ marginTop: 16 }}>
         <div className="stack">
           <div className="mapwrap">
-            <MapView site={site} layers={layers} selectedId={selectedZone} onSelect={setSelectedZone} />
+            <MapView site={site} layers={layers} selectedId={selectedZone} onSelect={setSelectedZone}
+              drawing={drawing} draft={draft}
+              onDraftPoint={(pt) => setDraft((prev) => [...prev, pt])}
+              onDraftClose={closeDraft} />
+            {drawing ? (
+              <div className="draw-bar" role="status">
+                <b>Drawing zone</b> · {draft.length} point{draft.length === 1 ? '' : 's'} — click to add;
+                click the first point or press Enter to close (3+ points)
+                <span className="field-row" style={{ marginLeft: 'auto' }}>
+                  <button className="btn btn--sm" disabled={draft.length === 0}
+                    onClick={() => setDraft((prev) => prev.slice(0, -1))}>
+                    Undo point
+                  </button>
+                  <button className="btn btn--sm btn--primary" disabled={draft.length < 3} onClick={closeDraft}>
+                    Close polygon
+                  </button>
+                  <button className="btn btn--sm" onClick={cancelDrawing}>Cancel</button>
+                </span>
+              </div>
+            ) : null}
             <div className="map-toolbar">
               {ALL_SERVICES.map((svc) => (
                 <button key={svc} className="layer-toggle" aria-pressed={layers.has(svc)}
@@ -257,6 +367,9 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
                 </button>
               ))}
               <span style={{ marginLeft: 'auto' }} className="field-row">
+                <button className="btn btn--sm btn--primary" onClick={startDrawing} disabled={drawing}>
+                  + Add repair zone
+                </button>
                 <button className="btn btn--sm" onClick={() => fileRef.current?.click()}>
                   {site.mapImage ? 'Replace map image' : 'Upload map image'}
                 </button>
@@ -344,7 +457,9 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
 
         <div>
           {zone ? (
-            <ZonePanel site={site} zone={zone} assumptions={A} onClose={() => setSelectedZone(null)} />
+            <ZonePanel site={site} zone={zone} assumptions={A} onClose={() => setSelectedZone(null)}
+              onEdit={() => setZoneForm({ mode: 'edit', zone })}
+              onDelete={() => deleteZone(zone)} />
           ) : (
             <div className="card" style={{ color: 'var(--ink-3)' }}>
               Select a repair zone on the map or in the tables to see its full record — observed measurements,
@@ -353,6 +468,21 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
           )}
         </div>
       </div>
+
+      {zoneForm ? (
+        <ZoneForm
+          mode={zoneForm.mode}
+          zone={zoneForm.mode === 'edit' ? zoneForm.zone : null}
+          site={site}
+          packageId={
+            zoneForm.mode === 'edit'
+              ? site.projectPackages.find((p) => p.repairZoneIds.includes(zoneForm.zone.id))?.id ?? ''
+              : ''
+          }
+          onSave={saveZoneForm}
+          onCancel={() => setZoneForm(null)}
+        />
+      ) : null}
     </>
   )
 }
