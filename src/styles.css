@@ -1,0 +1,405 @@
+/* Pavement Assess — design tokens.
+   Field tool: read in direct sunlight, operated with gloves, one-handed.
+   Pure black on pure white for maximum contrast; nothing decorative. */
+
+:root {
+  --ink: #000000;
+  --paper: #ffffff;
+  --muted: #6b6b6b;
+  --line: #d4d4d4;
+  --line-strong: #000000;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Never below 56px — this is used with gloves on. */
+  --touch: 56px;
+  --tab-bar-height: 72px;
+
+  --font: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', system-ui, sans-serif;
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  /* 17px base keeps iOS from zooming on input focus. */
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* Kill the grey tap flash; we draw our own pressed state. */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* ---------- App shell ---------- */
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5) var(--space-4)
+    calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + var(--space-4));
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Full-screen flows own the whole viewport — no tab bar to clear. */
+.screen--full {
+  padding-bottom: var(--space-4);
+}
+
+.screen-header {
+  padding-top: calc(env(safe-area-inset-top) + var(--space-2));
+  margin-bottom: var(--space-6);
+}
+
+.screen-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.screen-subtitle {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- Tab bar ---------- */
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: var(--paper);
+  border-top: 2px solid var(--line-strong);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 10;
+}
+
+.tab {
+  height: var(--tab-bar-height);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tab[aria-selected='true'] {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.tab-icon {
+  display: block;
+}
+
+.tab:active {
+  background: #f2f2f2;
+}
+
+/* ---------- Buttons ---------- */
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--touch);
+  padding: 0 var(--space-5);
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+
+.button:active {
+  opacity: 0.7;
+}
+
+.button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.button--secondary {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.button--ghost {
+  background: none;
+  border-color: transparent;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Pinned to the bottom of the screen so the primary action is always
+   thumb-reachable, whether or not the content above it scrolls. */
+.action-bar {
+  position: sticky;
+  bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
+  margin-top: auto;
+  padding: var(--space-4) 0;
+  background: var(--paper);
+  border-top: 2px solid var(--line-strong);
+}
+
+.screen--full .action-bar {
+  bottom: 0;
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--space-4));
+}
+
+.action-bar .button + .button {
+  margin-top: var(--space-2);
+}
+
+/* Keeps the last field clear of the pinned action bar. */
+.add-section {
+  margin-bottom: var(--space-4);
+}
+
+/* ---------- Forms ---------- */
+
+.field {
+  display: block;
+  margin-bottom: var(--space-5);
+}
+
+.field-label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field-input {
+  width: 100%;
+  min-height: var(--touch);
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  background: var(--paper);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.field-input::placeholder {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.field-hint {
+  margin: var(--space-2) 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.section-intro {
+  margin: 0 0 var(--space-4);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ---------- Sections editor ---------- */
+
+.section-row {
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.section-row-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.section-row-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.section-row .field:last-child {
+  margin-bottom: 0;
+}
+
+.link-button {
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.input-suffix {
+  display: flex;
+  align-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+}
+
+.input-suffix .field-input {
+  border: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.input-suffix-unit {
+  padding: 0 var(--space-4);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ---------- Property list ---------- */
+
+.property-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--line-strong);
+}
+
+.property-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.property-button {
+  display: block;
+  width: 100%;
+  min-height: var(--touch);
+  padding: var(--space-4) 0;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.property-button:active {
+  background: #f2f2f2;
+}
+
+.property-name {
+  display: block;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.property-meta {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* ---------- Empty / placeholder states ---------- */
+
+.empty {
+  border: 2px dashed var(--line);
+  border-radius: 2px;
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+  margin-bottom: var(--space-5);
+}
+
+.empty-title {
+  margin: 0 0 var(--space-2);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.empty-body {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
