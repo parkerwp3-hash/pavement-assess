@@ -43,7 +43,9 @@ rather than a consumer app.
 - Inputs are 17px, above the 16px threshold that makes iOS Safari zoom on
   focus.
 - Safe-area insets are respected top and bottom for notched devices.
-- Tokens live at the top of `src/styles.css`.
+- Tokens live at the top of `src/styles.css`; there are no inline styles.
+- The home-screen icon (`public/icon.svg`, `public/apple-touch-icon.png`) is the
+  same black-and-white lot striping, so a bookmarked install looks like the tool.
 
 ## Data
 
@@ -54,7 +56,9 @@ same reason. Reads and writes fail soft: private browsing and full-quota
 devices both throw on storage access, and that must never interrupt an
 inspection in progress.
 
-There is no sync yet. Clearing site data clears the properties.
+There is no sync yet and no undo, so deleting a property takes two deliberate
+taps — a mis-tap in a work glove should not cost a site visit. Clearing site
+data clears the properties.
 
 ## Layout
 

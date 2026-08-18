@@ -250,6 +250,23 @@ button {
   border-style: dashed;
 }
 
+/* Destructive confirm. The palette has no red to spend, so severity is carried
+   by weight: filled and set in caps against the outlined buttons around it. */
+.btn--danger {
+  background: var(--ink);
+  color: var(--paper);
+  text-transform: uppercase;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+}
+
+/* Stacked choices, destructive first. */
+.btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
 .btn--danger-text {
   width: auto;
   min-height: var(--tap-min);
@@ -424,6 +441,23 @@ textarea.input {
   border-bottom: 0;
 }
 
+/* A row that only reports — no tap target, so it drops the gutters and the
+   pressed state. */
+.row--static {
+  padding-left: 0;
+  padding-right: 0;
+  cursor: default;
+}
+
+.row--static:active {
+  background: var(--paper);
+}
+
+/* Trailing action under a full-bleed list. */
+.list-footer {
+  padding: var(--s5);
+}
+
 /* The row's inner elements are spans (they sit inside a <button>, which may
    not contain block-level tags), so they need explicit display. */
 .row-main {
@@ -556,6 +590,11 @@ textarea.input {
   padding: var(--s6) var(--s5) var(--s5);
 }
 
+/* The detail screen's blocks carry their own padding. */
+.flow-body--flush {
+  padding: 0;
+}
+
 .flow-section-heading {
   margin-bottom: var(--s4);
   padding-bottom: var(--s2);
@@ -643,6 +682,17 @@ textarea.input {
   font-size: 17px;
   font-weight: 500;
   white-space: pre-wrap;
+}
+
+.detail-list {
+  margin-top: var(--s3);
+}
+
+.detail-warning {
+  margin-bottom: var(--s4);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

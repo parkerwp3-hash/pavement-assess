@@ -65,7 +65,7 @@ export default function PropertiesScreen({
               )
             })}
           </div>
-          <div style={{ padding: 'var(--s5)' }}>
+          <div className="list-footer">
             <button
               type="button"
               className="btn btn--secondary"
