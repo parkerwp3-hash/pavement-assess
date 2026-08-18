@@ -5,17 +5,19 @@ import { ChevronLeftIcon, CloseIcon, PlusIcon } from '../components/Icons.jsx'
 import { createId } from '../lib/storage.js'
 import { digitsOnly, formatSqFt, toSquareFeet } from '../lib/format.js'
 import {
-  CLIMATE_REGIONS,
+  CLIMATE_ZONES,
   FACILITY_TYPES,
   TRAFFIC_CLASSES,
   labelFor,
 } from '../lib/taxonomy.js'
+import { normalizeSite } from '../lib/schema.js'
 
 const STEPS = [
   'property',
   'facility',
   'traffic',
   'climate',
+  'surfaces',
   'assignment',
   'sections',
 ]
@@ -24,7 +26,8 @@ const TITLES = {
   property: 'Property',
   facility: 'Facility type',
   traffic: 'Traffic class',
-  climate: 'Climate region',
+  climate: 'Climate zone',
+  surfaces: 'Surface areas',
   assignment: 'Assignment',
   sections: 'Lot sections',
 }
@@ -40,7 +43,9 @@ export default function NewPropertyFlow({ onCancel, onSave }) {
     address: '',
     facilityType: '',
     trafficClass: '',
-    climateRegion: '',
+    climateZone: '',
+    asphaltSF: '',
+    concreteSF: '',
     region: '',
     propertyManager: '',
     businessUnit: '',
@@ -108,17 +113,27 @@ export default function NewPropertyFlow({ onCancel, onSave }) {
         trafficClass: s.trafficClass,
       }))
 
-    onSave({
-      id: createId(),
-      ...draft,
-      name: draft.name.trim(),
-      address: draft.address.trim(),
-      region: draft.region.trim(),
-      propertyManager: draft.propertyManager.trim(),
-      businessUnit: draft.businessUnit.trim(),
-      sections: cleaned,
-      createdAt: new Date().toISOString(),
-    })
+    // Everything goes out through the schema normalizer so a hand-entered
+    // property is shaped exactly like one imported from the client system.
+    onSave(
+      normalizeSite({
+        id: createId(),
+        name: draft.name.trim(),
+        address: draft.address.trim(),
+        facilityType: draft.facilityType,
+        trafficClass: draft.trafficClass,
+        climateZone: draft.climateZone,
+        region: draft.region.trim(),
+        propertyManager: draft.propertyManager.trim(),
+        businessUnit: draft.businessUnit.trim(),
+        surfaceAreas: {
+          asphaltSF: toSquareFeet(draft.asphaltSF),
+          concreteSF: toSquareFeet(draft.concreteSF),
+        },
+        sections: cleaned,
+        createdAt: new Date().toISOString(),
+      }),
+    )
   }
 
   const picking = sections.find((s) => s.id === pickingFor) || null
@@ -213,11 +228,61 @@ export default function NewPropertyFlow({ onCancel, onSave }) {
         {step === 'climate' ? (
           <div className="flow-body flow-body--flush">
             <ChoiceList
-              name="Climate region"
-              options={CLIMATE_REGIONS}
-              value={draft.climateRegion}
-              onChange={(id) => choose('climateRegion', id)}
+              name="Climate zone"
+              options={CLIMATE_ZONES}
+              value={draft.climateZone}
+              onChange={(id) => choose('climateZone', id)}
             />
+          </div>
+        ) : null}
+
+        {step === 'surfaces' ? (
+          <div className="flow-body">
+            <p className="step-note" style={{ padding: '0 0 var(--s4)' }}>
+              Total paved area for the site, split by material. Sections are
+              captured separately in the last step.
+            </p>
+
+            <label className="field">
+              <span className="field-label">Asphalt area</span>
+              <div className="input-suffix">
+                <input
+                  className="input"
+                  value={draft.asphaltSF}
+                  onChange={(e) => set('asphaltSF', digitsOnly(e.target.value))}
+                  placeholder="420000"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
+                />
+                <span className="input-suffix-unit">sq ft</span>
+              </div>
+            </label>
+
+            <label className="field">
+              <span className="field-label">Concrete area</span>
+              <div className="input-suffix">
+                <input
+                  className="input"
+                  value={draft.concreteSF}
+                  onChange={(e) => set('concreteSF', digitsOnly(e.target.value))}
+                  placeholder="28000"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
+                />
+                <span className="input-suffix-unit">sq ft</span>
+              </div>
+            </label>
+
+            <div className="total-line">
+              <span>Total paved</span>
+              <span className="total-line-value">
+                {formatSqFt(
+                  toSquareFeet(draft.asphaltSF) + toSquareFeet(draft.concreteSF),
+                )}
+              </span>
+            </div>
           </div>
         ) : null}
 

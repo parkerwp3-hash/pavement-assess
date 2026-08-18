@@ -8,6 +8,7 @@
  */
 
 const KEY = 'pavement-assess/v1/properties'
+const SEEDED_KEY = 'pavement-assess/v1/seeded'
 
 function safeStorage() {
   try {
@@ -20,29 +21,6 @@ function safeStorage() {
   }
 }
 
-/**
- * Fill in fields added after a property was first saved.
- *
- * Properties recorded before classification existed are still on inspectors'
- * phones. They read back with the new fields empty rather than undefined, so
- * every screen can render them without guarding each field.
- */
-function normalizeProperty(property) {
-  return {
-    facilityType: '',
-    trafficClass: '',
-    climateRegion: '',
-    region: '',
-    propertyManager: '',
-    businessUnit: '',
-    ...property,
-    sections: (property.sections || []).map((section) => ({
-      trafficClass: '',
-      ...section,
-    })),
-  }
-}
-
 export function loadProperties() {
   const store = safeStorage()
   if (!store) return []
@@ -51,7 +29,7 @@ export function loadProperties() {
     const raw = store.getItem(KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed.map(normalizeProperty) : []
+    return Array.isArray(parsed) ? parsed : []
   } catch {
     return []
   }
@@ -63,6 +41,33 @@ export function saveProperties(properties) {
 
   try {
     store.setItem(KEY, JSON.stringify(properties))
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * One-shot flags, kept beside the records.
+ *
+ * Used to remember that the demo site was already offered, so deleting it
+ * does not simply bring it back on the next load.
+ */
+export function readFlag(key) {
+  const store = safeStorage()
+  if (!store) return false
+  try {
+    return store.getItem(`${SEEDED_KEY}/${key}`) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function writeFlag(key) {
+  const store = safeStorage()
+  if (!store) return false
+  try {
+    store.setItem(`${SEEDED_KEY}/${key}`, '1')
     return true
   } catch {
     return false

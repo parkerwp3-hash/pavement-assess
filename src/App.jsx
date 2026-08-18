@@ -1,58 +1,93 @@
 import { useEffect, useMemo, useState } from 'react'
-import TabBar from './components/TabBar.jsx'
-import PropertiesScreen from './screens/PropertiesScreen.jsx'
-import PropertyDetail from './screens/PropertyDetail.jsx'
+import Sidebar from './app/Sidebar.jsx'
+import TopBar from './app/TopBar.jsx'
+import PortfolioScreen from './screens/PortfolioScreen.jsx'
+import ProposalsScreen from './screens/ProposalsScreen.jsx'
+import ProjectsScreen from './screens/ProjectsScreen.jsx'
+import PropertyDetailScreen from './screens/PropertyDetailScreen.jsx'
 import NewPropertyFlow from './screens/NewPropertyFlow.jsx'
-import AssessScreen from './screens/AssessScreen.jsx'
-import ReportsScreen from './screens/ReportsScreen.jsx'
-import { loadProperties, saveProperties } from './lib/storage.js'
+import { loadSites, saveSites } from './lib/schema.js'
 
 export default function App() {
-  const [tab, setTab] = useState('properties')
-  const [properties, setProperties] = useState(loadProperties)
+  const [section, setSection] = useState('portfolio')
+  const [sites, setSites] = useState(loadSites)
+  const [openSiteId, setOpenSiteId] = useState(null)
   const [isCreating, setIsCreating] = useState(false)
-  const [openPropertyId, setOpenPropertyId] = useState(null)
 
   useEffect(() => {
-    saveProperties(properties)
-  }, [properties])
+    saveSites(sites)
+  }, [sites])
 
-  const openProperty = useMemo(
-    () => properties.find((p) => p.id === openPropertyId) || null,
-    [properties, openPropertyId],
+  const openSite = useMemo(
+    () => sites.find((site) => site.id === openSiteId) || null,
+    [sites, openSiteId],
   )
 
-  function handleSave(property) {
-    setProperties((prev) => [property, ...prev])
+  function navigate(next) {
+    setSection(next)
+    // Leaving a section closes whatever record was open under it.
+    setOpenSiteId(null)
+  }
+
+  function handleSave(site) {
+    setSites((prev) => [site, ...prev])
     setIsCreating(false)
   }
 
   function handleDelete(id) {
-    setProperties((prev) => prev.filter((p) => p.id !== id))
-    setOpenPropertyId(null)
+    setSites((prev) => prev.filter((site) => site.id !== id))
+    setOpenSiteId(null)
+  }
+
+  function toggleStar(id) {
+    setSites((prev) =>
+      prev.map((site) =>
+        site.id === id ? { ...site, highPriority: !site.highPriority } : site,
+      ),
+    )
+  }
+
+  function openFromAnySection(id) {
+    setSection('portfolio')
+    setOpenSiteId(id)
   }
 
   return (
     <div className="app">
-      {tab === 'properties' ? (
-        <PropertiesScreen
-          properties={properties}
-          onNewProperty={() => setIsCreating(true)}
-          onOpenProperty={setOpenPropertyId}
-        />
-      ) : null}
-      {tab === 'assess' ? <AssessScreen /> : null}
-      {tab === 'reports' ? <ReportsScreen /> : null}
+      <Sidebar active={section} onNavigate={navigate} />
 
-      <TabBar active={tab} onChange={setTab} />
+      <div className="main">
+        <TopBar />
 
-      {openProperty ? (
-        <PropertyDetail
-          property={openProperty}
-          onBack={() => setOpenPropertyId(null)}
-          onDelete={handleDelete}
-        />
-      ) : null}
+        <main className="content">
+          {openSite ? (
+            <PropertyDetailScreen
+              site={openSite}
+              onBack={() => setOpenSiteId(null)}
+              onDelete={handleDelete}
+            />
+          ) : (
+            <>
+              {section === 'portfolio' ? (
+                <PortfolioScreen
+                  sites={sites}
+                  onOpen={setOpenSiteId}
+                  onNew={() => setIsCreating(true)}
+                  onToggleStar={toggleStar}
+                />
+              ) : null}
+              {section === 'proposals' ? (
+                <ProposalsScreen sites={sites} onOpen={openFromAnySection} />
+              ) : null}
+              {section === 'projects' ? (
+                <ProjectsScreen sites={sites} onOpen={openFromAnySection} />
+              ) : null}
+            </>
+          )}
+        </main>
+
+        <footer className="footer">Copyrights © 2026 Diamond Solutions</footer>
+      </div>
 
       {isCreating ? (
         <NewPropertyFlow
