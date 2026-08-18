@@ -64,4 +64,8 @@ src/
   screens/      Properties, PropertyDetail, NewPropertyFlow, Assess, Reports
   lib/          localStorage persistence, number/area formatting
   styles.css    design tokens and all component styles
+public/
+  fonts/        self-hosted Inter
+  icon.svg      app mark — a crack through pavement
+  apple-touch-icon.png   180px render of the same mark, for the iOS home screen
 ```
