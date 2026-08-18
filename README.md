@@ -66,6 +66,6 @@ src/
   styles.css    design tokens and all component styles
 public/
   fonts/        self-hosted Inter
-  icon.svg      app mark — a crack through pavement
-  apple-touch-icon.png   180px render of the same mark, for the iOS home screen
+  icon.svg      app mark — lane dashes on black
+  apple-touch-icon.png   180px render of the same mark; iOS ignores SVG here
 ```
