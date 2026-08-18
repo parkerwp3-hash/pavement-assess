@@ -20,6 +20,29 @@ function safeStorage() {
   }
 }
 
+/**
+ * Fill in fields added after a property was first saved.
+ *
+ * Properties recorded before classification existed are still on inspectors'
+ * phones. They read back with the new fields empty rather than undefined, so
+ * every screen can render them without guarding each field.
+ */
+function normalizeProperty(property) {
+  return {
+    facilityType: '',
+    trafficClass: '',
+    climateRegion: '',
+    region: '',
+    propertyManager: '',
+    businessUnit: '',
+    ...property,
+    sections: (property.sections || []).map((section) => ({
+      trafficClass: '',
+      ...section,
+    })),
+  }
+}
+
 export function loadProperties() {
   const store = safeStorage()
   if (!store) return []
@@ -28,7 +51,7 @@ export function loadProperties() {
     const raw = store.getItem(KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
+    return Array.isArray(parsed) ? parsed.map(normalizeProperty) : []
   } catch {
     return []
   }

@@ -32,9 +32,10 @@
   --ink: #000000;
   --paper: #ffffff;
 
-  /* Only two grays. Both clear 7:1 on white so they survive glare. */
+  /* Only two grays. Both clear 7:1 on white so they survive glare —
+     #444 is 9.7:1, #595959 is exactly 7.0:1. */
   --ink-muted: #444444;
-  --ink-faint: #767676;
+  --ink-faint: #595959;
 
   /* Structure */
   --rule: #000000;
@@ -409,6 +410,147 @@ textarea.input {
 }
 
 /* ==========================================================================
+   Choices — the app's dropdown, laid out flat
+   ========================================================================== */
+
+.choices {
+  border-top: 1px solid var(--rule);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+  width: 100%;
+  min-height: 72px;
+  padding: var(--s4) var(--s5);
+  border: 0;
+  border-bottom: 1px solid var(--rule-soft);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.choice:active {
+  background: var(--fill-soft);
+}
+
+.choice:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: -3px;
+}
+
+/* Selected is carried by a filled left edge as well as the check, so the state
+   survives a screen washed out by direct sun. */
+.choice--on {
+  box-shadow: inset 6px 0 0 var(--ink);
+  background: var(--fill-soft);
+}
+
+.choice-text {
+  display: block;
+  min-width: 0;
+}
+
+.choice-label {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.choice--on .choice-label {
+  font-weight: 700;
+}
+
+.choice-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.choice-check {
+  flex: none;
+}
+
+/* Step counter and progress rail in the flow header */
+.flow-step {
+  margin-left: auto;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+.progress {
+  height: 4px;
+  background: var(--rule-soft);
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+
+.step-note {
+  padding: var(--s4) var(--s5) 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+/* A field whose value is picked on another screen. */
+.select-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  width: 100%;
+  min-height: var(--tap-lg);
+  padding: var(--s3) var(--s4);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.select-btn:active {
+  background: var(--fill-soft);
+}
+
+.select-btn:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.select-btn-value {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.select-btn-value--empty {
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+
+/* The chevron points left everywhere else; here it opens a screen to the right. */
+.select-btn-caret {
+  flex: none;
+  transform: rotate(180deg);
+}
+
+/* ==========================================================================
    Lists
    ========================================================================== */
 
@@ -458,6 +600,30 @@ textarea.input {
   padding: var(--s5);
 }
 
+/* Condition score slot. Empty until the assessment screen lands, but sized now
+   so rows keep their shape when scores start arriving. */
+.score {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.score-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.score-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+}
+
 /* The row's inner elements are spans (they sit inside a <button>, which may
    not contain block-level tags), so they need explicit display. */
 .row-main {
@@ -482,6 +648,19 @@ textarea.input {
   font-size: 14px;
   font-weight: 500;
   color: var(--ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Facility type and size stack rather than sharing one line — together they
+   overran 390px and the area silently truncated. */
+.row-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-faint);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -686,6 +865,37 @@ textarea.input {
 
 .detail-list {
   margin-top: var(--s3);
+}
+
+.detail-grid {
+  margin: var(--s3) 0 0;
+}
+
+.detail-pair {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.detail-pair:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.detail-pair dt {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.detail-pair dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: right;
 }
 
 .detail-warning {

@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { ChevronLeftIcon } from '../components/Icons.jsx'
 import { formatSqFt, pluralize } from '../lib/format.js'
+import {
+  CLIMATE_REGIONS,
+  FACILITY_TYPES,
+  TRAFFIC_CLASSES,
+  labelFor,
+} from '../lib/taxonomy.js'
 
 export default function PropertyDetail({ property, onBack, onDelete }) {
   // Deleting is unrecoverable — there is no sync and no undo — so it takes a
@@ -32,6 +38,36 @@ export default function PropertyDetail({ property, onBack, onDelete }) {
         </div>
 
         <div className="detail-block">
+          <div className="detail-label">Classification</div>
+          <dl className="detail-grid">
+            <div className="detail-pair">
+              <dt>Facility type</dt>
+              <dd>{labelFor(FACILITY_TYPES, property.facilityType)}</dd>
+            </div>
+            <div className="detail-pair">
+              <dt>Traffic class</dt>
+              <dd>{labelFor(TRAFFIC_CLASSES, property.trafficClass)}</dd>
+            </div>
+            <div className="detail-pair">
+              <dt>Climate region</dt>
+              <dd>{labelFor(CLIMATE_REGIONS, property.climateRegion)}</dd>
+            </div>
+            <div className="detail-pair">
+              <dt>Region / district</dt>
+              <dd>{property.region || '—'}</dd>
+            </div>
+            <div className="detail-pair">
+              <dt>Property manager</dt>
+              <dd>{property.propertyManager || '—'}</dd>
+            </div>
+            <div className="detail-pair">
+              <dt>Business unit</dt>
+              <dd>{property.businessUnit || '—'}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div className="detail-block">
           <div className="detail-label">
             Lot sections · {pluralize(sections.length, 'section')}
           </div>
@@ -43,7 +79,10 @@ export default function PropertyDetail({ property, onBack, onDelete }) {
                 <div key={section.id} className="row row--static">
                   <span className="row-main">
                     <span className="row-title">{section.name}</span>
-                    <span className="row-meta">{formatSqFt(section.sqft)}</span>
+                    <span className="row-meta">
+                      {formatSqFt(section.sqft)} ·{' '}
+                      {labelFor(TRAFFIC_CLASSES, section.trafficClass)}
+                    </span>
                   </span>
                 </div>
               ))}

@@ -1,6 +1,7 @@
 import Screen from '../components/Screen.jsx'
 import { ChevronRightIcon, PlusIcon, PropertiesIcon } from '../components/Icons.jsx'
 import { formatSqFt, pluralize } from '../lib/format.js'
+import { FACILITY_TYPES, labelFor } from '../lib/taxonomy.js'
 
 function totalSqFt(property) {
   return (property.sections || []).reduce((sum, s) => sum + (s.sqft || 0), 0)
@@ -56,9 +57,18 @@ export default function PropertiesScreen({
                   <span className="row-main">
                     <span className="row-title">{property.name}</span>
                     <span className="row-meta">
+                      {labelFor(FACILITY_TYPES, property.facilityType)}
+                    </span>
+                    <span className="row-sub">
                       {pluralize(sectionCount, 'section')} ·{' '}
                       {formatSqFt(totalSqFt(property))}
                     </span>
+                  </span>
+                  {/* Scores arrive with the assessment screen. The slot is here
+                      now so the row does not reflow once they do. */}
+                  <span className="score" aria-label="Condition score not yet assessed">
+                    <span className="score-value">—</span>
+                    <span className="score-label">PCI</span>
                   </span>
                   <ChevronRightIcon className="row-chevron" />
                 </button>

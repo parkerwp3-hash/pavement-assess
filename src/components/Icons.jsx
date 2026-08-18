@@ -77,6 +77,14 @@ export function PlusIcon(props) {
   )
 }
 
+export function CheckIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M4 12.5l5 5L20 6.5" />
+    </Svg>
+  )
+}
+
 export function CloseIcon(props) {
   return (
     <Svg {...props}>
