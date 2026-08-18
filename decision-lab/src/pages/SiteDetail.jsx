@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { labelize, packagePrice, pciTone, siteSummary } from '../lib/calc.js'
+import {
+  issueCounts,
+  labelize,
+  packagePrice,
+  pciTone,
+  siteSummary,
+  zoneInCategory,
+} from '../lib/calc.js'
 import MapView, { SERVICE_COLOR } from '../components/MapView.jsx'
 import ZoneForm from '../components/ZoneForm.jsx'
+import { ZoneThumb } from '../components/PropertyCard.jsx'
 import { nextZoneId } from '../lib/options.js'
 import { KPI, Sev, fmtDate, fmtInt, fmtMoney, fmtMoneyFull } from '../components/ui.jsx'
 
@@ -64,6 +72,149 @@ function ZonePanel({ site, zone, onClose, onEdit, onDelete }) {
   )
 }
 
+const DEEP_STRUCTURAL_DISPLAY = new Set([
+  'full_depth_repair',
+  'expanded_full_depth_repair',
+  'reconstruction',
+  'slab_replacement',
+])
+
+/** Worst severity in a set of zones → display band. Empty set reads Good. */
+function worstBand(zones) {
+  if (zones.some((z) => z.severity === 'severe')) return { label: 'Poor', cssVar: 'var(--poor)' }
+  if (zones.some((z) => z.severity === 'moderate')) return { label: 'Fair', cssVar: 'var(--fair)' }
+  return { label: 'Good', cssVar: 'var(--good)' }
+}
+
+/**
+ * "At a Glance" — the executive header. Everything shown is a restatement of
+ * data already on the site; the View links scroll, they do not navigate.
+ */
+function AtAGlance({ site, invest, onToggleStar, onJumpToMap, onViewCategory, onReviewProgram }) {
+  const tone = pciTone(site.pci)
+  const issues = issueCounts(site)
+  const z = site.repairZones
+
+  const condRows = [
+    { label: 'Function', band: worstBand(z.filter((x) => x.riskTags?.some((t) => ['operational_continuity', 'asset_preservation'].includes(t)))) },
+    { label: 'Liability', band: worstBand(z.filter((x) => x.riskTags?.some((t) => ['liability', 'safety'].includes(t)))) },
+    { label: 'Aesthetics', band: worstBand(z.filter((x) => ['striping', 'sealcoat'].includes(x.service))) },
+    { label: 'Structure', band: worstBand(z.filter((x) => DEEP_STRUCTURAL_DISPLAY.has(x.treatment))) },
+  ]
+
+  const highRisk = z.filter(
+    (x) => x.severity === 'severe' && x.riskTags?.some((t) => ['liability', 'safety', 'accessibility'].includes(t)),
+  ).length
+
+  return (
+    <section className="glance" aria-label="At a glance">
+      <div className="glance-head">
+        <div>
+          <div className="glance-title">
+            <button type="button" className={site.starred ? 'glance-star on' : 'glance-star'}
+              aria-pressed={Boolean(site.starred)}
+              aria-label={site.starred ? 'Remove priority star' : 'Mark as priority'}
+              onClick={onToggleStar}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2 7.5 14 3 9.6l6.2-.9L12 3z" />
+              </svg>
+            </button>
+            <div>
+              <h1>{site.name}</h1>
+              <p className="glance-sub">
+                {site.facilityType} · {site.trafficClass} traffic · assessed {fmtDate(site.assessmentDate)}
+              </p>
+              <div className="glance-chips">
+                <span className="glance-chip">{site.id}</span>
+                <span className="glance-chip">{site.region}</span>
+                <span className="glance-chip">{site.climateZone}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="glance-pci">
+          <div className="pci-gauge" style={{ '--pci': `${site.pci ?? 0}%`, '--pci-color': tone.cssVar }}>
+            <div className="pci-inner">
+              {site.pci != null ? (<><strong>{site.pci}</strong><span>/100</span></>) : (<strong>—</strong>)}
+            </div>
+          </div>
+          <div>
+            <div className="small-label">PCI Score</div>
+            <div className="condition" style={{ color: tone.cssVar }}>{tone.label}</div>
+          </div>
+        </div>
+
+        <div className="cond-list">
+          {condRows.map((row) => (
+            <div className="cond-row" key={row.label}>
+              <span className="cond-dot" style={{ background: row.band.cssVar }} />
+              {row.label}
+              <b style={{ color: row.band.cssVar }}>{row.band.label}</b>
+            </div>
+          ))}
+        </div>
+
+        <button type="button" className="glance-thumb" onClick={onJumpToMap}
+          aria-label="Jump to the site map">
+          {site.mapImage ? <img src={site.mapImage} alt="" /> : <ZoneThumb site={site} />}
+        </button>
+      </div>
+
+      <div className="glance-dates">
+        <div className="glance-date">
+          <div className="metric-label">Last Assessment</div>
+          <div className="glance-num">{fmtDate(site.assessmentDate)}</div>
+        </div>
+        <div className="glance-date">
+          <div className="metric-label">Next Assessment</div>
+          <div className="glance-num">{fmtDate(site.nextAssessment)}</div>
+        </div>
+        <div className="glance-date">
+          <div className="metric-label">Last Service</div>
+          <div className="glance-num">{fmtDate(site.lastService)}</div>
+        </div>
+        <div className="glance-date">
+          <div className="metric-label">Next Service Due</div>
+          <div className="glance-num">{fmtDate(site.nextDue)}</div>
+        </div>
+      </div>
+
+      <div className="glance-issues">
+        {highRisk > 0 ? (
+          <div className="glance-tile glance-tile--risk">
+            <div className="metric-label">High Risk</div>
+            <div className="glance-num">{highRisk}</div>
+            <button type="button" className="rowlink" onClick={() => onViewCategory('liability')}>
+              View
+            </button>
+          </div>
+        ) : null}
+        {issues.map((issue) => (
+          <div className="glance-tile" key={issue.key}>
+            <div className="metric-label">{issue.label}</div>
+            <div className="glance-num" style={issue.count === 0 ? { color: 'var(--txt-3)' } : undefined}>
+              {issue.count}
+            </div>
+            {issue.count > 0 ? (
+              <button type="button" className="rowlink" onClick={() => onViewCategory(issue.key)}>
+                View
+              </button>
+            ) : null}
+          </div>
+        ))}
+        <div className="glance-spend">
+          <div className="metric-label">Recommended Spend (Next 12 Months)</div>
+          <div className="glance-num">{fmtMoney(invest)}</div>
+          <button type="button" className="btn btn--sm btn--primary" onClick={onReviewProgram}>
+            Review Program
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function SiteDetail({ site, onBack, onUpdateSite }) {
   const [selectedZone, setSelectedZone] = useState(null)
   const [layers, setLayers] = useState(() => new Set(ALL_SERVICES))
@@ -71,7 +222,10 @@ export default function SiteDetail({ site, onBack, onUpdateSite }) {
   const [draft, setDraft] = useState([])
   // {mode:'create', geometry} | {mode:'edit', zone}
   const [zoneForm, setZoneForm] = useState(null)
+  const [flashCategory, setFlashCategory] = useState(null)
   const fileRef = useRef(null)
+  const mapRef = useRef(null)
+  const zonesRef = useRef(null)
 
   const m = useMemo(() => siteSummary(site), [site])
   const zone = site.repairZones.find((z) => z.id === selectedZone) || null
@@ -163,6 +317,17 @@ export default function SiteDetail({ site, onBack, onUpdateSite }) {
     setSelectedZone(null)
   }
 
+  function scrollToRef(ref) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ref.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+  }
+
+  function viewCategory(key) {
+    setFlashCategory(key)
+    scrollToRef(zonesRef)
+    window.setTimeout(() => setFlashCategory(null), 2400)
+  }
+
   function handleUpload(e) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -186,15 +351,14 @@ export default function SiteDetail({ site, onBack, onUpdateSite }) {
         <button className="btn" onClick={onBack}>← Portfolio</button>
       </div>
 
-      <div className="card">
-        <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-          {site.name}
-        </h1>
-        <p style={{ color: 'var(--ink-3)', fontSize: 13 }}>
-          {site.id} · {site.region} · {site.facilityType} · {site.trafficClass} traffic ·{' '}
-          {site.climateZone} · assessed {fmtDate(site.assessmentDate)}
-        </p>
-      </div>
+      <AtAGlance
+        site={site}
+        invest={m.invest}
+        onToggleStar={() => onUpdateSite({ ...site, starred: !site.starred })}
+        onJumpToMap={() => scrollToRef(mapRef)}
+        onViewCategory={viewCategory}
+        onReviewProgram={() => scrollToRef(zonesRef)}
+      />
 
       <div className="grid grid--kpi" style={{ marginTop: 16 }}>
         <KPI label="PCI Score"
@@ -210,7 +374,7 @@ export default function SiteDetail({ site, onBack, onUpdateSite }) {
 
       <div className="detail-cols" style={{ marginTop: 16 }}>
         <div className="stack">
-          <div className="mapwrap">
+          <div className="mapwrap" ref={mapRef}>
             <MapView site={site} layers={layers} selectedId={selectedZone} onSelect={setSelectedZone}
               drawing={drawing} draft={draft}
               onDraftPoint={(pt) => setDraft((prev) => [...prev, pt])}
@@ -256,7 +420,7 @@ export default function SiteDetail({ site, onBack, onUpdateSite }) {
             </div>
           </div>
 
-          <div className="card">
+          <div className="card" ref={zonesRef}>
             <div className="card-title">Repair Zones ({site.repairZones.length})</div>
             <div className="tablewrap">
               <table>
@@ -268,7 +432,9 @@ export default function SiteDetail({ site, onBack, onUpdateSite }) {
                 </thead>
                 <tbody>
                   {site.repairZones.map((z) => (
-                    <tr key={z.id} style={z.id === selectedZone ? { background: 'var(--accent-soft)' } : undefined}>
+                    <tr key={z.id}
+                      className={flashCategory && zoneInCategory(z, flashCategory) ? 'flash' : undefined}
+                      style={z.id === selectedZone ? { background: 'var(--accent-soft)' } : undefined}>
                       <td><button className="rowlink" onClick={() => setSelectedZone(z.id)}>{z.id}</button></td>
                       <td>{labelize(z.distressType)}</td>
                       <td><Sev s={z.severity} /></td>

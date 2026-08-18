@@ -27,51 +27,58 @@
    ========================================================================== */
 
 :root {
-  --brand: #00aeef;
-  --brand-dark: #0089bd;
-  --brand-ink: #1e6f93;
-  --brand-soft: #e6f6fd;
-  --brand-bar: linear-gradient(90deg, #5bb8c6 0%, #22b4e0 55%, #00bff3 100%);
-  --nav: #000000;
-  --nav-ink: #ffffff;
+  --bg: #121517;
+  --panel: #181C1E;
+  --panel-2: #1E2325;
+  --txt: #E8EDEE;
+  --txt-2: #97A1A4;
+  --txt-3: #5E686B;
 
-  --ink: #232a33;
-  --ink-2: #4d5866;
-  --ink-3: #76808d;
-  --paper: #ffffff;
-  --page: #ffffff;
-  --panel-head: #f2f2f2;
-  --line: #e0e4e9;
-  --line-soft: #edf0f3;
-  --accent: var(--brand-dark);
+  --brand: #00AFD7;
+  --brand-dark: #33C4E8;   /* hover lightens on dark ground */
+  --brand-ink: #7FD9EE;
+  --brand-soft: #0E2E38;
+  --brand-bar: linear-gradient(90deg, #0B3540 0%, #121517 100%);
+  --nav: #0C0F10;
+  --nav-ink: #E8EDEE;
+
+  --ink: var(--txt);
+  --ink-2: var(--txt-2);
+  --ink-3: var(--txt-3);
+  --paper: var(--panel);
+  --page: var(--bg);
+  --panel-head: var(--panel-2);
+  --line: #2A3033;
+  --line-soft: #22282B;
+  --accent: var(--brand);
   --accent-ink: var(--brand-ink);
   --accent-soft: var(--brand-soft);
 
-  /* Condition / severity status — always paired with a text label. */
-  --good: #256b45;      --good-soft: #e2efe7;
-  --fair: #8a6a0e;      --fair-soft: #f6eed6;
-  --poor: #ad5a1c;      --poor-soft: #f8e8da;
-  --critical: #a12b31;  --critical-soft: #f8e0e1;
+  /* Status — always paired with a text label. */
+  --good: #3BAF9F;      --good-soft: #12312C;
+  --fair: #E2A03F;      --fair-soft: #33280F;
+  --poor: #D2492A;      --poor-soft: #33170F;
+  --critical: #93331F;  --critical-soft: #2A120C;
   --star: #ffc61e;
 
-  /* Categorical service palette — validated for CVD/contrast; deliberately
-     NOT swapped to brand cyan, which fails 3:1 on white for data marks. */
-  --cat-asphalt: #2761c3;
-  --cat-concrete: #8a4fb5;
-  --cat-sealcoat: #128a70;
-  --cat-striping: #b06d10;
-  --cat-drainage: #8f3d38;
+  /* Categorical service accents, lightened for the dark ground; always
+     rendered beside text labels. */
+  --cat-asphalt: #5B8DE8;
+  --cat-concrete: #B07FD8;
+  --cat-sealcoat: #3FAE93;
+  --cat-striping: #D89A3F;
+  --cat-drainage: #C56B63;
 
-  /* Provenance */
-  --obs: #4d5866;
-  --der: #2761c3;
-  --mod: #8a6a0e;
+  --obs: var(--txt-2);
+  --der: var(--cat-asphalt);
+  --mod: var(--fair);
 
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
-  --radius: 8px;
+  --radius: 3px;
   --sidebar-w: 256px;
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     Helvetica, Arial, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 
@@ -129,7 +136,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 
 .brand-name { font-size: 18px; font-weight: 700; line-height: 1; }
-.brand-sub { display: block; margin-top: 2px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.32em; color: var(--brand); }
+.brand-sub { display: block; margin-top: 2px; font-size: 11px; font-weight: 600; letter-spacing: 0.32em; color: var(--brand); }
 
 .mock-badge {
   padding: 2px 10px;
@@ -181,7 +188,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   min-height: 56px;
   padding: var(--s2) var(--s5);
   background: var(--brand-bar);
-  color: #ffffff;
+  color: var(--txt);
   flex-wrap: wrap;
 }
 
@@ -189,15 +196,15 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 .topbar-actions { margin-left: auto; display: flex; gap: var(--s2); flex-wrap: wrap; }
 
 .topbar .btn {
-  border-color: rgba(255, 255, 255, 0.75);
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
+  border-color: var(--line);
+  background: rgba(232, 237, 238, 0.06);
+  color: var(--txt);
 }
-.topbar .btn:hover { background: rgba(255, 255, 255, 0.28); border-color: #ffffff; }
-.topbar .btn--danger { background: rgba(140, 22, 28, 0.35); border-color: #ffd7d9; }
+.topbar .btn:hover { background: rgba(232, 237, 238, 0.14); border-color: var(--txt-3); }
+.topbar .btn--danger { background: rgba(210, 73, 42, 0.18); border-color: var(--poor); color: #F2A490; }
 
 .main { display: flex; flex-direction: column; min-height: 100vh; background: var(--page); }
-.footer { padding: var(--s4); background: var(--brand-bar); color: #ffffff; font-size: 14px; text-align: center; }
+.footer { padding: var(--s4); background: var(--brand-bar); color: var(--txt-2); font-size: 14px; text-align: center; }
 
 /* ==========================================================================
    Layout
@@ -286,8 +293,9 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: var(--brand);
-  color: #ffffff;
+  background: var(--brand-soft);
+  border: 1px solid var(--brand);
+  color: var(--brand);
   flex: none;
   font-size: 20px;
 }
@@ -301,7 +309,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   padding: 0 6px;
   border-radius: 3px;
   border: 1px solid;
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.07em;
   line-height: 15px;
@@ -368,7 +376,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 .btn--primary {
   background: var(--brand);
   border-color: var(--brand);
-  color: #fff;
+  color: #0D1214;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -387,7 +395,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   cursor: pointer;
 }
 .seg button + button { border-left: 1px solid var(--line); }
-.seg button[aria-pressed='true'] { background: var(--brand); color: #fff; }
+.seg button[aria-pressed='true'] { background: var(--brand); color: #0D1214; }
 
 .input, select.input {
   min-height: 34px;
@@ -493,8 +501,9 @@ td.num, th.num { text-align: right; }
   gap: var(--s2);
   width: 100%;
   padding: var(--s3) var(--s4);
-  background: var(--brand);
-  color: #ffffff;
+  background: var(--panel-2);
+  color: var(--txt);
+  border-bottom: 2px solid var(--brand);
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -702,8 +711,8 @@ td.num, th.num { text-align: right; }
   height: 34px;
   border-radius: 50%;
   border: 0;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--line);
+  background: rgba(18, 21, 23, 0.82);
+  color: var(--txt-3);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -743,7 +752,7 @@ td.num, th.num { text-align: right; }
   gap: 2px;
 }
 .pci-inner strong { font-size: 20px; font-variant-numeric: tabular-nums; }
-.pci-inner span { font-size: 10.5px; color: var(--ink-3); }
+.pci-inner span { font-size: 11px; color: var(--ink-3); }
 
 .small-label { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-2); }
 .condition { font-size: 16px; font-weight: 800; }
@@ -762,7 +771,7 @@ td.num, th.num { text-align: right; }
 .budget-fill.over { background: var(--critical); }
 
 .budget-delta { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 6px; font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.budget-delta span { font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.budget-delta span { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 .budget-delta.negative { color: var(--critical); }
 .budget-delta.positive { color: var(--good); }
 
@@ -780,6 +789,197 @@ td.num, th.num { text-align: right; }
 }
 .issue.active { border-color: var(--issue-color); color: var(--issue-color); }
 .issue-count { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.issue-label { font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+.issue-label { font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
 
 .pcard-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-top: var(--s3); }
+
+/* ==========================================================================
+   Dark executive pass — numeric mono, circular issue chips, glance header
+   ========================================================================== */
+
+.kpi-value, .pci-inner strong, .metric-value, .budget-number, .budget-delta,
+.issue-count, td.num, .total-line-value, .glance-num {
+  font-family: var(--mono);
+}
+
+.kpi-label, .small-label, .budget-label, .metric-label, .card-title,
+.section-title, .issue-label {
+  letter-spacing: 0.09em;
+}
+
+/* Inputs and modals sit on the raised panel tone */
+.input, select.input, textarea.input { background: var(--panel-2); }
+.input:focus { box-shadow: 0 0 0 3px rgba(0, 175, 215, 0.18); }
+.modal { background: var(--panel); border: 1px solid var(--line); }
+.modal-scrim { background: rgba(6, 8, 9, 0.72); }
+tbody tr:hover { background: var(--panel-2); }
+.btn { background: var(--panel-2); }
+.layer-toggle { background: var(--panel-2); }
+.layer-toggle[aria-pressed='true'] { background: var(--brand-soft); color: var(--brand-ink); }
+.rowlink { color: var(--brand); }
+.panel-link { color: var(--brand); }
+.sev--severe { background: var(--critical-soft); color: #F2A490; }
+.sev--moderate { background: var(--poor-soft); color: var(--fair); }
+.sev--low { background: var(--good-soft); color: var(--good); }
+.tagchip { background: var(--panel-2); color: var(--txt-2); }
+.mock-badge { background: var(--fair-soft); }
+.draw-bar { background: var(--brand-soft); color: var(--brand-ink); border-top-color: var(--brand); }
+.sitemap-legend { color: var(--txt-2); }
+
+/* --- circular category chips --- */
+.issue {
+  border: 0;
+  background: none;
+  padding: 0;
+  gap: 3px;
+}
+
+.issue-count {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--issue-color);
+  background: color-mix(in srgb, var(--issue-color) 16%, transparent);
+  color: var(--txt);
+  font-size: 14px;
+}
+
+.issue-label { color: var(--txt-3); }
+
+.issue:not(.active) {
+  filter: saturate(0);
+  opacity: 0.55;
+}
+
+@media (max-width: 480px) {
+  .pcard-actions { flex-direction: column; align-items: stretch; }
+  .pcard-actions .btn { width: 100%; }
+}
+
+/* --- At a Glance (Site Detail) --- */
+.glance {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--s4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.glance-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) auto minmax(0, 1fr) 200px;
+  gap: var(--s4);
+  align-items: center;
+}
+
+.glance-title { display: flex; align-items: flex-start; gap: var(--s2); }
+.glance-title h1 { font-size: 23px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.15; }
+.glance-sub { margin-top: 3px; font-size: 12.5px; color: var(--txt-2); }
+
+.glance-star {
+  border: 0; background: none; cursor: pointer; padding: 2px;
+  color: var(--txt-3);
+}
+.glance-star.on { color: var(--star); }
+.glance-star svg { width: 22px; height: 22px; fill: currentColor; stroke: currentColor; stroke-width: 1; }
+
+.glance-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.glance-chip {
+  padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--panel-2); font-size: 11px; font-weight: 600; color: var(--txt-2);
+}
+
+.glance-pci { display: flex; align-items: center; gap: 10px; }
+.glance-pci .pci-gauge { width: 72px; height: 72px; }
+.glance-pci .pci-inner { width: 52px; height: 52px; background: var(--panel); }
+
+.cond-list { display: flex; flex-direction: column; gap: 5px; min-width: 170px; }
+.cond-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--txt-2); }
+.cond-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.cond-row b { margin-left: auto; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+
+.glance-thumb {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+  height: 108px;
+}
+.glance-thumb svg, .glance-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.glance-thumb:hover { border-color: var(--brand); }
+
+.glance-dates {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line-soft);
+}
+.glance-date .metric-label { font-size: 11px; }
+.glance-num { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.glance-issues {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) minmax(235px, 1.4fr);
+  gap: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line-soft);
+  align-items: stretch;
+}
+
+.glance-tile {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  padding: var(--s3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.glance-tile .metric-label { font-size: 11px; }
+.glance-tile .glance-num { font-size: 18px; }
+.glance-tile a, .glance-tile button.rowlink { font-size: 11.5px; align-self: flex-start; }
+.glance-tile--risk { border-color: var(--poor); background: var(--poor-soft); }
+.glance-tile--risk .metric-label { color: #F2A490; }
+
+.glance-spend {
+  /* Auto-placement would drop this into whichever narrow track comes next;
+     pin it to the wide trailing track the grid defines for it. */
+  grid-column: -2 / -1;
+  border: 1px solid var(--brand);
+  border-radius: var(--radius);
+  background: var(--brand-soft);
+  padding: var(--s3) var(--s4);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+.glance-spend .metric-label { color: var(--brand-ink); font-size: 11px; }
+.glance-spend .btn { align-self: stretch; justify-content: center; white-space: nowrap; font-size: 12px; letter-spacing: 0.04em; padding: 0 10px; min-width: 0; }
+.glance-spend .glance-num { font-size: 22px; }
+
+/* zone rows flashed by a glance "View" link */
+tr.flash td { background: var(--brand-soft); }
+
+@media (max-width: 1100px) {
+  .glance-head { grid-template-columns: minmax(0, 1fr) minmax(170px, auto); align-items: start; }
+}
+
+@media (max-width: 900px) {
+  .glance-thumb { display: none; }
+  .cond-list { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .glance-head { grid-template-columns: minmax(0, 1fr); }
+  .glance-dates { grid-template-columns: repeat(2, 1fr); }
+  .glance-issues { grid-template-columns: repeat(2, 1fr); }
+  .glance-spend { grid-column: 1 / -1; }
+}

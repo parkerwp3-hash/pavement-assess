@@ -8,7 +8,7 @@ const SEV_FILL = {
 }
 
 /** Non-interactive minimap: the site's real zones, not a decorative fake. */
-function ZoneThumb({ site }) {
+export function ZoneThumb({ site }) {
   const [bx, by, bw, bh] = site.layout?.building || [0.6, 0.1, 0.3, 0.25]
   return (
     <svg viewBox="0 0 100 42" preserveAspectRatio="none" aria-hidden="true" className="thumb-svg">

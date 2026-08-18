@@ -43,16 +43,27 @@ const DEEP_STRUCTURAL = new Set([
   'slab_replacement',
 ])
 
+/** True when a zone belongs to a display category. Categories mirror the
+    portfolio card: four are tag-driven, structural is treatment-driven. */
+export function zoneInCategory(zone, key) {
+  const hasTag = (...tags) => zone.riskTags?.some((t) => tags.includes(t))
+  if (key === 'liability') return hasTag('liability', 'safety')
+  if (key === 'ada') return hasTag('accessibility')
+  if (key === 'maintenance') return hasTag('asset_preservation')
+  if (key === 'drainage') return hasTag('drainage')
+  if (key === 'structural') return DEEP_STRUCTURAL.has(zone.treatment)
+  return false
+}
+
 /** Issue counts DERIVED from the risk tags and treatments already on zones —
     the card invents nothing. Each entry counts matching zones. */
 export function issueCounts(site) {
-  const z = site.repairZones
-  const byTag = (...tags) => z.filter((x) => x.riskTags?.some((t) => tags.includes(t))).length
+  const n = (key) => site.repairZones.filter((z) => zoneInCategory(z, key)).length
   return [
-    { key: 'liability', label: 'Liability', count: byTag('liability', 'safety'), cssVar: 'var(--critical)' },
-    { key: 'ada', label: 'ADA', count: byTag('accessibility'), cssVar: 'var(--poor)' },
-    { key: 'maintenance', label: 'Maint.', count: byTag('asset_preservation'), cssVar: 'var(--cat-asphalt)' },
-    { key: 'drainage', label: 'Drainage', count: byTag('drainage'), cssVar: 'var(--cat-sealcoat)' },
-    { key: 'structural', label: 'Structural', count: z.filter((x) => DEEP_STRUCTURAL.has(x.treatment)).length, cssVar: 'var(--ink-2)' },
+    { key: 'liability', label: 'Liability', count: n('liability'), cssVar: 'var(--critical)' },
+    { key: 'ada', label: 'ADA', count: n('ada'), cssVar: 'var(--poor)' },
+    { key: 'maintenance', label: 'Maint.', count: n('maintenance'), cssVar: 'var(--cat-asphalt)' },
+    { key: 'drainage', label: 'Drainage', count: n('drainage'), cssVar: 'var(--cat-sealcoat)' },
+    { key: 'structural', label: 'Structural', count: n('structural'), cssVar: 'var(--ink-2)' },
   ]
 }
