@@ -1,0 +1,55 @@
+/*
+ * Offline cache for the Decision Lab.
+ *
+ * Navigations go network-first so a deploy shows up on the next online load,
+ * falling back to the cached shell offline. Hashed assets are effectively
+ * immutable, so everything else is cache-first with a background refresh.
+ * App data itself lives in localStorage and never passes through here.
+ */
+const CACHE = 'ddl-v2'
+
+self.addEventListener('install', () => {
+  self.skipWaiting()
+})
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim()),
+  )
+})
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((res) => {
+          const copy = res.clone()
+          caches.open(CACHE).then((c) => c.put(request, copy))
+          return res
+        })
+        .catch(() =>
+          caches.match(request).then((hit) => hit || caches.match(self.registration.scope)),
+        ),
+    )
+    return
+  }
+
+  event.respondWith(
+    caches.open(CACHE).then(async (cache) => {
+      const hit = await cache.match(request)
+      const refresh = fetch(request)
+        .then((res) => {
+          if (res.ok) cache.put(request, res.clone())
+          return res
+        })
+        .catch(() => hit)
+      return hit || refresh
+    }),
+  )
+})
