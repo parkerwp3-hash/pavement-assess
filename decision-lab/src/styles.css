@@ -675,3 +675,111 @@ td.num, th.num { text-align: right; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ==========================================================================
+   Property card (Portfolio)
+   ========================================================================== */
+
+.grid--cards { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+
+.property-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.image-wrap { position: relative; height: 132px; background: #a7b795; }
+.image-wrap img, .thumb-svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.star-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--line);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.star-button svg { width: 18px; height: 18px; fill: currentColor; stroke: var(--ink-3); stroke-width: 1; }
+.star-button.on { color: var(--star); }
+.star-button.on svg { stroke: #b28900; }
+
+.pcard-body { padding: var(--s3) var(--s4) var(--s4); display: flex; flex-direction: column; }
+.pcard-divider { height: 1px; background: var(--line-soft); margin: var(--s3) 0; }
+
+.pcard-name { font-size: 16px; font-weight: 800; letter-spacing: 0.01em; text-transform: uppercase; }
+.pcard-id { margin-top: 1px; font-size: 12px; font-weight: 700; color: var(--brand-dark); }
+.pcard-addr { margin-top: 1px; font-size: 12px; color: var(--ink-3); }
+.pcard-muted { font-size: 12px; color: var(--ink-3); }
+
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; align-items: center; }
+.pci-block { display: flex; align-items: center; gap: 10px; grid-row: span 3; }
+
+.pci-gauge {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: conic-gradient(var(--pci-color) var(--pci), var(--line-soft) 0);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.pci-inner {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.pci-inner strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+.pci-inner span { font-size: 10.5px; color: var(--ink-3); }
+
+.small-label { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-2); }
+.condition { font-size: 16px; font-weight: 800; }
+
+.metric { display: flex; flex-direction: column; }
+.metric-label { font-size: 11px; font-weight: 600; color: var(--ink-3); }
+.metric-value { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.budget-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; }
+.budget-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
+.budget-number { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+.budget-number span { color: var(--ink-3); font-weight: 500; font-size: 12px; }
+
+.budget-bar { grid-column: 1 / -1; height: 7px; border-radius: 4px; background: var(--line-soft); overflow: hidden; }
+.budget-fill { height: 100%; border-radius: 4px; background: var(--brand); }
+.budget-fill.over { background: var(--critical); }
+
+.budget-delta { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 6px; font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.budget-delta span { font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.budget-delta.negative { color: var(--critical); }
+.budget-delta.positive { color: var(--good); }
+
+.issue-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.issue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 2px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  color: var(--ink-3);
+  background: var(--paper);
+}
+.issue.active { border-color: var(--issue-color); color: var(--issue-color); }
+.issue-count { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.issue-label { font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+
+.pcard-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); margin-top: var(--s3); }

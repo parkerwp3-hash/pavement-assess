@@ -1,10 +1,23 @@
+import PropertyCard from '../components/PropertyCard.jsx'
 import { siteSummary } from '../lib/calc.js'
 import { KPI, fmtInt, fmtMoney } from '../components/ui.jsx'
 
-export default function Portfolio({ sites, onOpenSite }) {
+export default function Portfolio({ sites, onOpenSite, onUpdateSite }) {
   const rows = sites.map((site) => ({ site, m: siteSummary(site) }))
   const totalPaved = rows.reduce((a, r) => a + r.m.pavedSF, 0)
   const totalInvest = rows.reduce((a, r) => a + r.m.invest, 0)
+
+  // Starred sites first, then by identified need — the walk-in ordering.
+  const ordered = [...sites].sort(
+    (a, b) =>
+      Number(Boolean(b.starred)) - Number(Boolean(a.starred)) ||
+      siteSummary(b).invest - siteSummary(a).invest,
+  )
+
+  function toggleStar(id) {
+    const site = sites.find((s) => s.id === id)
+    if (site) onUpdateSite({ ...site, starred: !site.starred })
+  }
 
   return (
     <>
@@ -26,18 +39,8 @@ export default function Portfolio({ sites, onOpenSite }) {
 
       <h2 className="section-title">Sites</h2>
       <div className="grid grid--cards">
-        {rows.map(({ site, m }) => (
-          <button key={site.id} className="sitecard" onClick={() => onOpenSite(site.id)}>
-            <span className="sitecard-name">{site.name}</span>
-            <span className="sitecard-meta">
-              {site.id} · {site.region} · {site.facilityType} · {site.climateZone}
-            </span>
-            <span className="sitecard-stats">
-              <span><b>{fmtMoney(m.invest)}</b>identified</span>
-              <span><b>{m.zoneCount}</b>repair zones</span>
-              <span><b>{fmtInt(m.pavedSF)}</b>paved SF</span>
-            </span>
-          </button>
+        {ordered.map((site) => (
+          <PropertyCard key={site.id} site={site} onOpen={onOpenSite} onToggleStar={toggleStar} />
         ))}
       </div>
     </>

@@ -36,6 +36,7 @@ export const SEED_SITES = [
   // 1 — healthy preservation candidate
   site({
     id: 'SITE-101',
+    pci: 82, budget: 500000, remainingLifeYears: 12.5, lastService: '2025-09-14', nextDue: '2027-04-10', starred: false,
     name: 'Riverton Logistics Hub',
     region: 'Midwest',
     climateZone: 'Temperate',
@@ -60,6 +61,7 @@ export const SEED_SITES = [
   // 2 — moderate structural repair burden
   site({
     id: 'SITE-102',
+    pci: 68, budget: 1500000, remainingLifeYears: 7.2, lastService: '2024-06-20', nextDue: '2026-10-05', starred: false,
     name: 'Cedar Junction Distribution Center',
     region: 'Southeast',
     climateZone: 'Hot Humid',
@@ -84,6 +86,7 @@ export const SEED_SITES = [
   // 3 — heavy truck terminal
   site({
     id: 'SITE-103',
+    pci: 55, budget: 9000000, remainingLifeYears: 5.8, lastService: '2023-08-02', nextDue: '2026-09-01', starred: true,
     name: 'Gulf Gate Truck Terminal',
     region: 'Southeast',
     climateZone: 'Hot Humid',
@@ -110,6 +113,7 @@ export const SEED_SITES = [
   // 4 — drainage-driven failures
   site({
     id: 'SITE-104',
+    pci: 48, budget: 3500000, remainingLifeYears: 4.6, lastService: '2022-11-15', nextDue: '2026-08-20', starred: false,
     name: 'Bayou Crossing Freight Yard',
     region: 'Southwest',
     climateZone: 'Coastal',
@@ -134,6 +138,7 @@ export const SEED_SITES = [
   // 5 — freeze-thaw deterioration
   site({
     id: 'SITE-105',
+    pci: 44, budget: 2500000, remainingLifeYears: 4.1, lastService: '2024-05-30', nextDue: '2026-11-12', starred: false,
     name: 'Northgate Freeze Line Depot',
     region: 'Northeast',
     climateZone: 'Freeze-Thaw',
@@ -158,6 +163,7 @@ export const SEED_SITES = [
   // 6 — concrete and ADA needs
   site({
     id: 'SITE-106',
+    pci: 71, budget: 2800000, remainingLifeYears: 8.4, lastService: '2025-07-08', nextDue: '2027-06-15', starred: false,
     name: 'Summit Ridge Service Center',
     region: 'West',
     climateZone: 'Mountain',
@@ -183,6 +189,7 @@ export const SEED_SITES = [
   // 7 — striping and appearance needs
   site({
     id: 'SITE-107',
+    pci: 76, budget: 400000, remainingLifeYears: 9.6, lastService: '2025-03-22', nextDue: '2027-03-22', starred: false,
     name: 'Palo Verde Crossdock',
     region: 'Southwest',
     climateZone: 'Hot Dry',
@@ -205,6 +212,7 @@ export const SEED_SITES = [
   // 8 — major rehabilitation candidate
   site({
     id: 'SITE-108',
+    pci: 31, budget: 8000000, remainingLifeYears: 2.1, lastService: '2021-09-10', nextDue: '2026-09-15', starred: true,
     name: 'Iron District Terminal',
     region: 'Midwest',
     climateZone: 'Freeze-Thaw',

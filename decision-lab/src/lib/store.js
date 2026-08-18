@@ -22,7 +22,17 @@ export function loadState() {
     if (!raw) return freshState()
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed.sites)) return freshState()
-    return { sites: parsed.sites }
+    // Saves from before the condition fields existed get them backfilled from
+    // the seed (matched by id). User-created sites simply lack them, and the
+    // card renders its not-yet-scored state.
+    const seedById = new Map(SEED_SITES.map((x) => [x.id, x]))
+    const sites = parsed.sites.map((site) => {
+      if (site.pci !== undefined || !seedById.has(site.id)) return site
+      const seed = seedById.get(site.id)
+      const { pci, budget, remainingLifeYears, lastService, nextDue, starred } = seed
+      return { pci, budget, remainingLifeYears, lastService, nextDue, starred, ...site }
+    })
+    return { sites }
   } catch {
     return freshState()
   }

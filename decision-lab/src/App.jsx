@@ -135,7 +135,7 @@ export default function App() {
 
         <main className="content">
           {page === 'portfolio' ? (
-            <Portfolio sites={state.sites} onOpenSite={openSite} />
+            <Portfolio sites={state.sites} onOpenSite={openSite} onUpdateSite={updateSite} />
           ) : null}
           {page === 'site' && site ? (
             <SiteDetail key={site.id} site={site}

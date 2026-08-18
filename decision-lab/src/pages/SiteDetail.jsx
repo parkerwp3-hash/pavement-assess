@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { labelize, packagePrice, siteSummary } from '../lib/calc.js'
+import { labelize, packagePrice, pciTone, siteSummary } from '../lib/calc.js'
 import MapView, { SERVICE_COLOR } from '../components/MapView.jsx'
 import ZoneForm from '../components/ZoneForm.jsx'
 import { nextZoneId } from '../lib/options.js'
@@ -197,6 +197,11 @@ export default function SiteDetail({ site, onBack, onUpdateSite }) {
       </div>
 
       <div className="grid grid--kpi" style={{ marginTop: 16 }}>
+        <KPI label="PCI Score"
+          value={site.pci != null
+            ? <span style={{ color: pciTone(site.pci).cssVar }}>{site.pci}</span>
+            : '—'}
+          sub={site.pci != null ? `${pciTone(site.pci).label} condition · imported score` : 'not yet scored'} />
         <KPI label="Identified Investment" value={fmtMoney(m.invest)} sub="current customer pricing" />
         <KPI label="Paved SF" value={fmtInt(m.pavedSF)}
           sub={`${fmtInt(site.asphaltSF)} asphalt · ${fmtInt(site.concreteSF)} concrete`} />
