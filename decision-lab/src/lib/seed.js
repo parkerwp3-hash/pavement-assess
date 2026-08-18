@@ -248,24 +248,3 @@ for (const s of SEED_SITES) {
   }
 }
 
-/** Portfolio-level context: the customer's estate is larger than what Diamond
-    has assessed so far. Used for the %-assessed KPI. */
-export const PORTFOLIO_META = {
-  customerName: 'National Fleet Customer (Mock)',
-  totalSitesInPortfolio: 12,
-  estimatedUnassessedPavedSF: 5600000,
-}
-
-/** Default planning assumptions.
-    DEMO ASSUMPTIONS — NOT VALIDATED FOR CUSTOMER USE. */
-export const DEFAULT_ASSUMPTIONS = {
-  inflationPct: 4.0,
-  growthPct: { low: 5, base: 12, high: 25 },
-  // Condition band from structural burden % and crack density; the WORSE of
-  // the two indices wins. Thresholds are the upper edge of Good/Fair/Poor.
-  burdenThresholds: [3, 8, 15],
-  crackDensityThresholds: [15, 35, 60],
-  priorityWeights: { severity: 45, risk: 30, urgency: 25 },
-  preservation: { maxBurdenPct: 4, minSealcoatSharePct: 40 },
-  budgetMethod: 'priority', // 'priority' | 'worst_first' | 'efficiency'
-}

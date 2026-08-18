@@ -1,30 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  BANDS,
-  labelize,
-  packagePrice,
-  packageScore,
-  projectZone,
-  siteMetrics,
-} from '../lib/calc.js'
-import MapView from '../components/MapView.jsx'
+import { labelize, packagePrice, siteSummary } from '../lib/calc.js'
+import MapView, { SERVICE_COLOR } from '../components/MapView.jsx'
 import ZoneForm from '../components/ZoneForm.jsx'
 import { nextZoneId } from '../lib/options.js'
-import { HBar, SERVICE_COLOR } from '../components/charts.jsx'
-import { BandChip, KPI, Prov, Sev, fmtDate, fmtInt, fmtMoney, fmtMoneyFull, fmtPct } from '../components/ui.jsx'
+import { KPI, Sev, fmtDate, fmtInt, fmtMoney, fmtMoneyFull } from '../components/ui.jsx'
 
 const ALL_SERVICES = ['asphalt', 'concrete', 'sealcoat', 'striping', 'drainage']
 
-function ZonePanel({ site, zone, assumptions: A, onClose, onEdit, onDelete }) {
-  const [years, setYears] = useState(3)
+function ZonePanel({ site, zone, onClose, onEdit, onDelete }) {
   const pkg = site.projectPackages.find((p) => p.repairZoneIds.includes(zone.id))
-  const proj = projectZone(zone, years, A)
   const unitCost = zone.quantity ? zone.currentCustomerPrice / zone.quantity : 0
-  const m = siteMetrics(site, A)
 
   return (
     <div className="card zonepanel stack" aria-label={`Repair zone ${zone.id} details`}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <h3 style={{ fontSize: 16 }}>{zone.id} · {labelize(zone.distressType)}</h3>
         <span className="field-row">
           <button className="btn btn--sm" onClick={onEdit}>Edit</button>
@@ -33,35 +22,27 @@ function ZonePanel({ site, zone, assumptions: A, onClose, onEdit, onDelete }) {
         </span>
       </div>
 
-      <div>
-        <div className="card-title">Observed</div>
-        <dl className="kv">
-          <dt>Distress type</dt><dd>{labelize(zone.distressType)}</dd>
-          <dt>Severity</dt><dd><Sev s={zone.severity} /></dd>
-          <dt>Service</dt><dd>{labelize(zone.service)}</dd>
-          <dt>Recommended treatment</dt><dd>{labelize(zone.treatment)}</dd>
-          <dt>Quantity</dt><dd>{fmtInt(zone.quantity)} {zone.unit}</dd>
-          <dt>Current price</dt><dd>{fmtMoneyFull(zone.currentCustomerPrice)}</dd>
-          <dt>Priority</dt><dd>{labelize(zone.priority)}</dd>
-          <dt>Confidence</dt><dd>{labelize(zone.confidence)}</dd>
-        </dl>
-        <p className="chart-note">Price imported from Diamond's costing system — treated as authoritative.</p>
-        {zone.notes ? (
-          <p className="chart-note" style={{ whiteSpace: 'normal' }}><b>Notes:</b> {zone.notes}</p>
-        ) : null}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+      <dl className="kv">
+        <dt>Severity</dt><dd><Sev s={zone.severity} /></dd>
+        <dt>Service</dt><dd>{labelize(zone.service)}</dd>
+        <dt>Recommended treatment</dt><dd>{labelize(zone.treatment)}</dd>
+        <dt>Quantity</dt><dd>{fmtInt(zone.quantity)} {zone.unit}</dd>
+        <dt>Current price</dt><dd>{fmtMoneyFull(zone.currentCustomerPrice)}</dd>
+        <dt>Unit cost</dt><dd>${unitCost.toFixed(2)} / {zone.unit}</dd>
+        <dt>Priority</dt><dd>{labelize(zone.priority)}</dd>
+        <dt>Confidence</dt><dd>{labelize(zone.confidence)}</dd>
+      </dl>
+      <p className="chart-note">Price imported from Diamond's costing system — treated as authoritative.</p>
+
+      {zone.riskTags?.length ? (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {zone.riskTags.map((t) => <span className="tagchip" key={t}>{labelize(t)}</span>)}
         </div>
-      </div>
+      ) : null}
 
-      <div>
-        <div className="card-title">Derived</div>
-        <dl className="kv">
-          <dt>Unit cost</dt><dd>${unitCost.toFixed(2)} / {zone.unit}</dd>
-          <dt>Share of site need</dt>
-          <dd>{fmtPct((zone.currentCustomerPrice / Math.max(1, m.invest)) * 100)}</dd>
-        </dl>
-      </div>
+      {zone.notes ? (
+        <p className="chart-note" style={{ whiteSpace: 'normal' }}><b>Notes:</b> {zone.notes}</p>
+      ) : null}
 
       {pkg ? (
         <div>
@@ -76,101 +57,14 @@ function ZonePanel({ site, zone, assumptions: A, onClose, onEdit, onDelete }) {
             <b>Approval reason:</b> {pkg.approvalReason}
           </p>
         </div>
-      ) : null}
-
-      <div>
-        <div className="card-title">Projection <Prov k="modeled" /></div>
-        {zone.growthProfile ? (
-          <>
-            <div className="slider-row">
-              <label htmlFor={`yrs-${zone.id}`} style={{ fontSize: 13, fontWeight: 600 }}>Years out</label>
-              <input id={`yrs-${zone.id}`} type="range" min="0" max="5" step="1" value={years}
-                onChange={(e) => setYears(Number(e.target.value))} />
-              <b style={{ fontVariantNumeric: 'tabular-nums' }}>{years}</b>
-            </div>
-            {proj ? (
-              <div className="tablewrap">
-                <table className="range-table">
-                  <thead>
-                    <tr><th></th><th className="num">Low</th><th className="num">Base</th><th className="num">High</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Projected quantity ({zone.unit})</td>
-                      <td className="num">{fmtInt(proj.qty.low)}</td>
-                      <td className="num">{fmtInt(proj.qty.base)}</td>
-                      <td className="num">{fmtInt(proj.qty.high)}</td>
-                    </tr>
-                    <tr>
-                      <td>Planning cost range</td>
-                      <td className="num">{fmtMoney(proj.cost.low)}</td>
-                      <td className="num">{fmtMoney(proj.cost.base)}</td>
-                      <td className="num">{fmtMoney(proj.cost.high)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <dl className="kv">
-                <dt>Current quantity</dt><dd>{fmtInt(zone.quantity)} {zone.unit}</dd>
-                <dt>Current cost</dt><dd>{fmtMoneyFull(zone.currentCustomerPrice)}</dd>
-              </dl>
-            )}
-            <p className="chart-note" style={{ whiteSpace: 'normal' }}>
-              Growth {A.growthPct.low}% / {A.growthPct.base}% / {A.growthPct.high}%/yr; inflation {A.inflationPct}%/yr;
-              Diamond's expected path: <b>{labelize(zone.growthProfile)}</b>. Unit cost {`$${proj ? proj.unitCostThen.toFixed(2) : unitCost.toFixed(2)}`}/{zone.unit} at year {years}.
-            </p>
-            <div className="disclaimer" style={{ marginTop: 8 }}>
-              Planning range, not a prediction. The direction and shape of future expansion are unknown, so no
-              future footprint is drawn on the map.
-            </div>
-          </>
-        ) : (
-          <p className="chart-note" style={{ whiteSpace: 'normal' }}>
-            No growth assumption assigned to this zone — it is priced for current quantities only.
-          </p>
-        )}
-      </div>
+      ) : (
+        <p className="chart-note">Not assigned to a project package yet.</p>
+      )}
     </div>
   )
 }
 
-function OverrideControl({ site, metrics, onOverride }) {
-  const [editing, setEditing] = useState(false)
-  const [band, setBand] = useState(metrics.band)
-  const [note, setNote] = useState(site.conditionOverride?.note || '')
-
-  if (!editing) {
-    return (
-      <span className="field-row">
-        <BandChip band={metrics.band} overridden={metrics.overridden} />
-        <button className="btn btn--sm" onClick={() => setEditing(true)}>
-          {metrics.overridden ? 'Edit override' : 'Override band'}
-        </button>
-        {metrics.overridden ? (
-          <button className="btn btn--sm" onClick={() => onOverride(null)}>Clear</button>
-        ) : null}
-      </span>
-    )
-  }
-  return (
-    <span className="field-row">
-      <select className="input" value={band} onChange={(e) => setBand(Number(e.target.value))}
-        aria-label="Override condition band">
-        {BANDS.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
-      </select>
-      <input className="input" style={{ minWidth: 260 }} placeholder="Reason for override (required)"
-        value={note} onChange={(e) => setNote(e.target.value)} aria-label="Override reason" />
-      <button className="btn btn--sm btn--primary" disabled={!note.trim()}
-        onClick={() => { onOverride({ band, note: note.trim() }); setEditing(false) }}>
-        Apply
-      </button>
-      <button className="btn btn--sm" onClick={() => setEditing(false)}>Cancel</button>
-    </span>
-  )
-}
-
-export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite }) {
+export default function SiteDetail({ site, onBack, onUpdateSite }) {
   const [selectedZone, setSelectedZone] = useState(null)
   const [layers, setLayers] = useState(() => new Set(ALL_SERVICES))
   const [drawing, setDrawing] = useState(false)
@@ -179,16 +73,8 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
   const [zoneForm, setZoneForm] = useState(null)
   const fileRef = useRef(null)
 
-  const m = useMemo(() => siteMetrics(site, A), [site, A])
+  const m = useMemo(() => siteSummary(site), [site])
   const zone = site.repairZones.find((z) => z.id === selectedZone) || null
-
-  const byService = useMemo(() => {
-    const map = new Map()
-    for (const z of site.repairZones) {
-      map.set(z.service, (map.get(z.service) || 0) + z.currentCustomerPrice)
-    }
-    return [...map.entries()].sort((a, b) => b[1] - a[1])
-  }, [site])
 
   function toggleLayer(svc) {
     setLayers((prev) => {
@@ -246,7 +132,7 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
     const { packageId, ...zoneFields } = fields
     if (zoneForm.mode === 'create') {
       const id = nextZoneId(site)
-      const newZone = { id, ...zoneFields, growthProfile: null, geometry: zoneForm.geometry }
+      const newZone = { id, ...zoneFields, geometry: zoneForm.geometry }
       onUpdateSite({
         ...site,
         repairZones: [...site.repairZones, newZone],
@@ -264,14 +150,14 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
     setZoneForm(null)
   }
 
-  function deleteZone(zone) {
-    if (!window.confirm(`Delete ${zone.id} (${labelize(zone.distressType)})? This cannot be undone.`)) return
+  function deleteZone(z) {
+    if (!window.confirm(`Delete ${z.id} (${labelize(z.distressType)})? This cannot be undone.`)) return
     onUpdateSite({
       ...site,
-      repairZones: site.repairZones.filter((z) => z.id !== zone.id),
+      repairZones: site.repairZones.filter((x) => x.id !== z.id),
       projectPackages: site.projectPackages.map((p) => ({
         ...p,
-        repairZoneIds: p.repairZoneIds.filter((id) => id !== zone.id),
+        repairZoneIds: p.repairZoneIds.filter((id) => id !== z.id),
       })),
     })
     setSelectedZone(null)
@@ -298,41 +184,23 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
     <>
       <div className="field-row" style={{ marginBottom: 12 }}>
         <button className="btn" onClick={onBack}>← Portfolio</button>
-        <span className="mock-badge">MOCK DATA</span>
       </div>
 
-      <div className="card stack">
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.01em' }}>{site.name}</h1>
-            <p style={{ color: 'var(--ink-3)', fontSize: 13 }}>
-              {site.id} · {site.region} · {site.facilityType} · {site.trafficClass} traffic ·{' '}
-              {site.climateZone} · assessed {fmtDate(site.assessmentDate)}
-            </p>
-          </div>
-          <OverrideControl site={site} metrics={m}
-            onOverride={(o) => onUpdateSite({ ...site, conditionOverride: o })} />
-        </div>
-        {m.overridden ? (
-          <p className="chart-note">
-            Manual override in effect — computed band was {BANDS[m.computedBand].short}. Reason:{' '}
-            {site.conditionOverride.note}
-          </p>
-        ) : null}
+      <div className="card">
+        <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+          {site.name}
+        </h1>
+        <p style={{ color: 'var(--ink-3)', fontSize: 13 }}>
+          {site.id} · {site.region} · {site.facilityType} · {site.trafficClass} traffic ·{' '}
+          {site.climateZone} · assessed {fmtDate(site.assessmentDate)}
+        </p>
       </div>
 
       <div className="grid grid--kpi" style={{ marginTop: 16 }}>
-        <KPI label="Structural Repair Burden" prov="derived" value={fmtPct(m.burdenPct)}
-          sub={`${fmtInt(m.structuralSF)} SF of ${fmtInt(site.asphaltSF)} asphalt SF`} />
-        <KPI label="Crack Density" prov="derived" value={`${m.crackDensity.toFixed(0)} LF/kSF`}
-          sub={`${fmtInt(m.crackFillLF)} LF crack fill`} />
-        <KPI label="Sealcoat-Eligible" prov="derived" value={fmtPct(m.sealcoatSharePct, 0)} sub="share of asphalt SF" />
-        <KPI label="Concrete Repair" prov="derived" value={fmtPct(m.concretePct)}
-          sub={`${fmtInt(m.concreteRepairSF)} SF of ${fmtInt(site.concreteSF)} concrete SF`} />
-        <KPI label="Critical Issues" prov="observed" value={m.criticalCount} sub="severe-severity zones" />
-        <KPI label="Recommended Investment" prov="observed" value={fmtMoney(m.invest)} sub="current customer pricing" />
-        <KPI label="Investment / Paved SF" prov="derived" value={`$${m.needPerSF.toFixed(2)}`}
-          sub={`${fmtInt(m.pavedSF)} paved SF`} />
+        <KPI label="Identified Investment" value={fmtMoney(m.invest)} sub="current customer pricing" />
+        <KPI label="Paved SF" value={fmtInt(m.pavedSF)}
+          sub={`${fmtInt(site.asphaltSF)} asphalt · ${fmtInt(site.concreteSF)} concrete`} />
+        <KPI label="Repair Zones" value={m.zoneCount} sub={`${m.packageCount} project packages`} />
       </div>
 
       <div className="detail-cols" style={{ marginTop: 16 }}>
@@ -384,57 +252,13 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
           </div>
 
           <div className="card">
-            <div className="card-title">Spend by Service <Prov k="observed" /></div>
-            <HBar
-              rows={byService.map(([k, v]) => ({ label: labelize(k), value: v, color: SERVICE_COLOR[k] }))}
-              format={fmtMoney}
-            />
-          </div>
-
-          <div className="card">
-            <div className="card-title">Project Packages ({site.projectPackages.length})</div>
-            <div className="tablewrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Package</th><th>Name</th><th className="num">Year</th>
-                    <th className="num">Score</th><th className="num">Price</th><th>Zones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {site.projectPackages.map((pkg) => {
-                    const { score } = packageScore(pkg, site, A)
-                    return (
-                      <tr key={pkg.id}>
-                        <td>{pkg.id}</td>
-                        <td style={{ whiteSpace: 'normal' }}>{pkg.name}</td>
-                        <td className="num">{pkg.recommendedYear}</td>
-                        <td className="num">{score}</td>
-                        <td className="num">{fmtMoney(packagePrice(pkg, site))}</td>
-                        <td>
-                          {pkg.repairZoneIds.map((id) => (
-                            <button key={id} className="rowlink" style={{ marginRight: 6 }}
-                              onClick={() => setSelectedZone(id)}>
-                              {id}
-                            </button>
-                          ))}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="card">
             <div className="card-title">Repair Zones ({site.repairZones.length})</div>
             <div className="tablewrap">
               <table>
                 <thead>
                   <tr>
                     <th>Zone</th><th>Distress</th><th>Severity</th><th>Treatment</th>
-                    <th className="num">Qty</th><th className="num">Price</th><th>Confidence</th>
+                    <th className="num">Qty</th><th className="num">Price</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -446,7 +270,38 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
                       <td>{labelize(z.treatment)}</td>
                       <td className="num">{fmtInt(z.quantity)} {z.unit}</td>
                       <td className="num">{fmtMoney(z.currentCustomerPrice)}</td>
-                      <td>{labelize(z.confidence)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-title">Project Packages ({site.projectPackages.length})</div>
+            <div className="tablewrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Package</th><th>Name</th><th className="num">Year</th>
+                    <th className="num">Price</th><th>Zones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {site.projectPackages.map((pkg) => (
+                    <tr key={pkg.id}>
+                      <td>{pkg.id}</td>
+                      <td style={{ whiteSpace: 'normal' }}>{pkg.name}</td>
+                      <td className="num">{pkg.recommendedYear}</td>
+                      <td className="num">{fmtMoney(packagePrice(pkg, site))}</td>
+                      <td>
+                        {pkg.repairZoneIds.map((id) => (
+                          <button key={id} className="rowlink" style={{ marginRight: 6 }}
+                            onClick={() => setSelectedZone(id)}>
+                            {id}
+                          </button>
+                        ))}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -457,13 +312,13 @@ export default function SiteDetail({ site, assumptions: A, onBack, onUpdateSite 
 
         <div>
           {zone ? (
-            <ZonePanel site={site} zone={zone} assumptions={A} onClose={() => setSelectedZone(null)}
+            <ZonePanel site={site} zone={zone} onClose={() => setSelectedZone(null)}
               onEdit={() => setZoneForm({ mode: 'edit', zone })}
               onDelete={() => deleteZone(zone)} />
           ) : (
             <div className="card" style={{ color: 'var(--ink-3)' }}>
-              Select a repair zone on the map or in the tables to see its full record — observed measurements,
-              derived unit costs, and modeled projections.
+              Select a repair zone on the map or in the table to see its record — or draw a new one
+              with “Add repair zone.”
             </div>
           )}
         </div>

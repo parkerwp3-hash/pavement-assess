@@ -1,19 +1,19 @@
 /**
- * localStorage persistence for the whole lab state.
+ * localStorage persistence.
  *
- * One key holds sites + assumptions. Uploaded map images are kept inside the
- * site records (data URLs), so export/import round-trips them; a size guard
- * warns before a big image threatens the ~5MB storage quota.
+ * State is just { sites }. Older saves (and older exports) carried an
+ * assumptions object from the full build — loads take the sites and drop the
+ * rest, so nothing breaks for anyone who already has data.
  */
 
-import { DEFAULT_ASSUMPTIONS, SEED_SITES } from './seed.js'
+import { SEED_SITES } from './seed.js'
 
 const KEY = 'ddl/v1/state'
 
 const clone = (x) => JSON.parse(JSON.stringify(x))
 
 export function freshState() {
-  return { sites: clone(SEED_SITES), assumptions: clone(DEFAULT_ASSUMPTIONS) }
+  return { sites: clone(SEED_SITES) }
 }
 
 export function loadState() {
@@ -21,12 +21,8 @@ export function loadState() {
     const raw = window.localStorage.getItem(KEY)
     if (!raw) return freshState()
     const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed.sites) || !parsed.assumptions) return freshState()
-    // Missing assumption fields (older saves) fall back to defaults.
-    return {
-      sites: parsed.sites,
-      assumptions: { ...clone(DEFAULT_ASSUMPTIONS), ...parsed.assumptions },
-    }
+    if (!Array.isArray(parsed.sites)) return freshState()
+    return { sites: parsed.sites }
   } catch {
     return freshState()
   }
@@ -34,7 +30,7 @@ export function loadState() {
 
 export function saveState(state) {
   try {
-    window.localStorage.setItem(KEY, JSON.stringify(state))
+    window.localStorage.setItem(KEY, JSON.stringify({ sites: state.sites }))
     return true
   } catch {
     return false // quota or private browsing — the session keeps working in memory
@@ -52,7 +48,12 @@ export function resetState() {
 
 export function exportJSON(state) {
   return JSON.stringify(
-    { format: 'diamond-decision-lab', version: 1, exportedAt: new Date().toISOString(), ...state },
+    {
+      format: 'diamond-decision-lab',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      sites: state.sites,
+    },
     null,
     2,
   )
@@ -71,12 +72,7 @@ export function importJSON(text) {
         return { error: `Site ${s.id || '(missing id)'} is missing an id or repairZones array.` }
       }
     }
-    return {
-      state: {
-        sites,
-        assumptions: { ...freshState().assumptions, ...(parsed.assumptions || {}) },
-      },
-    }
+    return { state: { sites } }
   } catch (e) {
     return { error: `Could not parse JSON: ${e.message}` }
   }

@@ -8,8 +8,15 @@
  */
 
 import { labelize } from '../lib/calc.js'
-import { SERVICE_COLOR } from './charts.jsx'
 import { fmtInt, fmtMoney } from './ui.jsx'
+
+export const SERVICE_COLOR = {
+  asphalt: 'var(--cat-asphalt)',
+  concrete: 'var(--cat-concrete)',
+  sealcoat: 'var(--cat-sealcoat)',
+  striping: 'var(--cat-striping)',
+  drainage: 'var(--cat-drainage)',
+}
 
 const W = 1000
 const H = 600

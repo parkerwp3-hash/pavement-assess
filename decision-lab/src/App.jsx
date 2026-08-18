@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import Sidebar from './app/Sidebar.jsx'
 import Portfolio from './pages/Portfolio.jsx'
 import SiteDetail from './pages/SiteDetail.jsx'
-import ModelLab from './pages/ModelLab.jsx'
 import { exportJSON, importJSON, loadState, resetState, saveState } from './lib/store.js'
 
 function DataModal({ mode, state, onApply, onClose }) {
@@ -117,8 +116,7 @@ export default function App() {
       <Sidebar
         items={[
           { id: 'portfolio', label: 'Portfolio', icon: 'portfolio' },
-          { id: 'site', label: site ? 'Site Detail' : 'Site Detail', icon: 'site', disabled: !site },
-          { id: 'lab', label: 'Model Lab', icon: 'lab' },
+          { id: 'site', label: 'Site Detail', icon: 'site', disabled: !site },
         ]}
         active={page}
         onNavigate={setPage}
@@ -137,15 +135,11 @@ export default function App() {
 
         <main className="content">
           {page === 'portfolio' ? (
-            <Portfolio sites={state.sites} assumptions={state.assumptions} onOpenSite={openSite} />
+            <Portfolio sites={state.sites} onOpenSite={openSite} />
           ) : null}
           {page === 'site' && site ? (
-            <SiteDetail key={site.id} site={site} assumptions={state.assumptions}
+            <SiteDetail key={site.id} site={site}
               onBack={() => setPage('portfolio')} onUpdateSite={updateSite} />
-          ) : null}
-          {page === 'lab' ? (
-            <ModelLab assumptions={state.assumptions}
-              onChange={(a) => setState((prev) => ({ ...prev, assumptions: a }))} />
           ) : null}
         </main>
 

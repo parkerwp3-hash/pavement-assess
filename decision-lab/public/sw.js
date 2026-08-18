@@ -6,7 +6,7 @@
  * immutable, so everything else is cache-first with a background refresh.
  * App data itself lives in localStorage and never passes through here.
  */
-const CACHE = 'ddl-v2'
+const CACHE = 'ddl-v3'
 
 self.addEventListener('install', () => {
   self.skipWaiting()
